@@ -54,6 +54,7 @@ export function OptionalSections() {
                         defaultValue={field.type === "tags" ? [] : field.type === "key-value" ? {} : ""}
                         render={({ field: { value, onChange } }) => {
                           if (field.type === "tags") {
+                            console.log('Rendering TagsInput for', section.key, field.name, value);
                             return (
                               <TagsInput
                                 value={value || []}
