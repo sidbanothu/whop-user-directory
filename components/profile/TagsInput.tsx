@@ -13,7 +13,7 @@ export function TagsInput({ value, onChange, placeholder, max = 8 }: {
       e.preventDefault();
       if (value.length < max && !value.includes(input.trim())) {
         const newTags = [...value, input.trim()];
-        console.log('TagsInput onChange:', newTags);
+        console.log('TagsInput handleKeyDown onChange:', newTags);
         onChange(newTags);
         setInput("");
       }
@@ -41,7 +41,10 @@ export function TagsInput({ value, onChange, placeholder, max = 8 }: {
         className="flex-1 min-w-[120px] border-none outline-none py-1"
         type="text"
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => {
+          console.log('TagsInput input onChange:', e.target.value);
+          setInput(e.target.value);
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         maxLength={32}

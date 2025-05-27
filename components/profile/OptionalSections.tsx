@@ -52,13 +52,13 @@ export function OptionalSections() {
                         control={control}
                         name={`sections.${section.key}.${field.name}`}
                         defaultValue={field.type === "tags" ? [] : field.type === "key-value" ? {} : ""}
-                        render={({ field: { value, onChange } }) => {
+                        render={({ field }) => {
                           if (field.type === "tags") {
-                            console.log('Rendering TagsInput for', section.key, field.name, value);
+                            console.log('Rendering TagsInput for', section.key, field.name, field.value);
                             return (
                               <TagsInput
-                                value={value || []}
-                                onChange={onChange}
+                                value={field.value || []}
+                                onChange={field.onChange}
                                 placeholder={field.placeholder}
                                 max={field.max}
                               />
@@ -67,8 +67,8 @@ export function OptionalSections() {
                           if (field.type === "key-value") {
                             return (
                               <KeyValuePairsInput
-                                value={value || {}}
-                                onChange={onChange}
+                                value={field.value || {}}
+                                onChange={field.onChange}
                                 keyPlaceholder="Key"
                                 valuePlaceholder="Value"
                                 max={field.max}
@@ -79,8 +79,8 @@ export function OptionalSections() {
                             <input
                               type="text"
                               className="w-full border rounded px-3 py-2"
-                              value={value || ""}
-                              onChange={(e) => onChange(e.target.value)}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
                               placeholder={field.placeholder}
                             />
                           );
