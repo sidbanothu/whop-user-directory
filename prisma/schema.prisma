@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profiles {
+  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String
+  experience_id String
+  username      String
+  name          String
+  bio           String?
+  avatar_url    String?
+  sections      Json?                    @default("[]")
+  created_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  search_vector Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('english'::regconfig, COALESCE(name, ''::text)), 'A'::\"char\") || setweight(to_tsvector('english'::regconfig, COALESCE(username, ''::text)), 'B'::\"char\")) || setweight(to_tsvector('english'::regconfig, COALESCE(bio, ''::text)), 'C'::\"char\")) || setweight(to_tsvector('english'::regconfig, COALESCE((sections)::text, ''::text)), 'D'::\"char\"))"))
+
+  @@unique([experience_id, username], map: "profiles_community_username_idx")
+  @@index([experience_id], map: "profiles_community_id_idx")
+  @@index([search_vector], type: Gin)
+  @@index([user_id])
+  @@index([username])
+}
