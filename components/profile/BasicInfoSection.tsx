@@ -15,7 +15,11 @@ export function BasicInfoSection() {
           <input
             className="w-full border rounded px-3 py-2"
             placeholder="Username"
-            {...register("username")}
+            {...register("username", {
+              required: "Username is required",
+              minLength: { value: 2, message: "Min 2 characters" },
+              maxLength: { value: 32, message: "Max 32 characters" },
+            })}
           />
           {errors.username && (
             <p className="text-red-500 text-sm mt-1">{errors.username.message as string}</p>
@@ -25,7 +29,11 @@ export function BasicInfoSection() {
           <input
             className="w-full border rounded px-3 py-2"
             placeholder="Name"
-            {...register("name")}
+            {...register("name", {
+              required: "Name is required",
+              minLength: { value: 2, message: "Min 2 characters" },
+              maxLength: { value: 64, message: "Max 64 characters" },
+            })}
           />
           {errors.name && (
             <p className="text-red-500 text-sm mt-1">{errors.name.message as string}</p>
@@ -35,7 +43,9 @@ export function BasicInfoSection() {
           <textarea
             className="w-full border rounded px-3 py-2"
             placeholder="Bio"
-            {...register("bio")}
+            {...register("bio", {
+              maxLength: { value: 256, message: "Max 256 characters" },
+            })}
           />
           {errors.bio && (
             <p className="text-red-500 text-sm mt-1">{errors.bio.message as string}</p>
