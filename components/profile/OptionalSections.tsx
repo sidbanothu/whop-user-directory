@@ -45,33 +45,33 @@ export function OptionalSections() {
 
               {expanded.includes(section.key) && (
                 <div className="px-6 py-4 space-y-4 border-t bg-gray-50">
-                  {section.fields.map((field) => (
-                    <div key={field.name}>
-                      <label className="block font-medium mb-1">{field.label}</label>
+                  {section.fields.map((fieldConfig) => (
+                    <div key={fieldConfig.name}>
+                      <label className="block font-medium mb-1">{fieldConfig.label}</label>
                       <Controller
                         control={control}
-                        name={`sections.${section.key}.${field.name}`}
-                        defaultValue={field.type === "tags" ? [] : field.type === "key-value" ? {} : ""}
+                        name={`sections.${section.key}.${fieldConfig.name}`}
+                        defaultValue={fieldConfig.type === "tags" ? [] : fieldConfig.type === "key-value" ? {} : ""}
                         render={({ field }) => {
-                          if (field.type === "tags") {
-                            console.log('Rendering TagsInput for', section.key, field.name, field.value);
+                          if (fieldConfig.type === "tags") {
+                            console.log('Rendering TagsInput for', section.key, fieldConfig.name, field.value);
                             return (
                               <TagsInput
                                 value={field.value || []}
                                 onChange={field.onChange}
-                                placeholder={field.placeholder}
-                                max={field.max}
+                                placeholder={fieldConfig.placeholder}
+                                max={fieldConfig.max}
                               />
                             );
                           }
-                          if (field.type === "key-value") {
+                          if (fieldConfig.type === "key-value") {
                             return (
                               <KeyValuePairsInput
                                 value={field.value || {}}
                                 onChange={field.onChange}
                                 keyPlaceholder="Key"
                                 valuePlaceholder="Value"
-                                max={field.max}
+                                max={fieldConfig.max}
                               />
                             );
                           }
@@ -81,7 +81,7 @@ export function OptionalSections() {
                               className="w-full border rounded px-3 py-2"
                               value={field.value || ""}
                               onChange={(e) => field.onChange(e.target.value)}
-                              placeholder={field.placeholder}
+                              placeholder={fieldConfig.placeholder}
                             />
                           );
                         }}
