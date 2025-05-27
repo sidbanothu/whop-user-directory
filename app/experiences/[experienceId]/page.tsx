@@ -1,6 +1,10 @@
 import { whopApi } from "@/lib/whop-api";
 import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
+import { Suspense } from "react";
+import { DirectoryGrid } from "@/components/directory/DirectoryGrid";
+import { SearchBar } from "@/components/directory/SearchBar";
+import Link from "next/link";
 
 export default async function ExperiencePage({
   params,
@@ -31,21 +35,22 @@ export default async function ExperiencePage({
   const { accessLevel } = result.hasAccessToExperience;
 
   return (
-    <div className="flex justify-center items-center h-screen px-8">
-      <h1 className="text-xl">
-        Hi <strong>{user.name}</strong>, you{" "}
-        <strong>
-          {result.hasAccessToExperience.hasAccess ? "have" : "do not have"}{" "}
-          access
-        </strong>{" "}
-        to this experience. Your access level to this whop is:{" "}
-        <strong>{accessLevel}</strong>. <br />
-        <br />
-        Your user ID is <strong>{userId}</strong> and your username is{" "}
-        <strong>@{user.username}</strong>.<br />
-        <br />
-        You are viewing the experience: <strong>{experience.name}</strong>
-      </h1>
-    </div>
+    <main className="container mx-auto px-4 py-8">
+      <div className="flex justify-end items-center mb-8">
+        <Link
+          href={`/experiences/${experienceId}/edit-profile`}
+          className="px-4 py-2 rounded bg-black text-white font-semibold hover:bg-gray-800 transition"
+        >
+          Edit Profile
+        </Link>
+      </div>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold mb-4">Community Directory</h2>
+        <SearchBar />
+      </div>
+      <Suspense fallback={<div>Loading profiles...</div>}>
+        <DirectoryGrid />
+      </Suspense>
+    </main>
   );
 }
