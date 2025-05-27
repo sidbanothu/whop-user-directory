@@ -12,7 +12,9 @@ export function TagsInput({ value, onChange, placeholder, max = 8 }: {
     if (e.key === "Enter" && input.trim()) {
       e.preventDefault();
       if (value.length < max && !value.includes(input.trim())) {
-        onChange([...value, input.trim()]);
+        const newTags = [...value, input.trim()];
+        console.log('TagsInput onChange:', newTags);
+        onChange(newTags);
         setInput("");
       }
     } else if (e.key === "Backspace" && !input && value.length) {

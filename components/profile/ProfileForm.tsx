@@ -40,6 +40,7 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
 
   const onSubmit: SubmitHandler<ProfileFormData> = async (data) => {
     try {
+      console.log('ProfileForm onSubmit data:', data);
       setIsSubmitting(true);
       setError(null);
 

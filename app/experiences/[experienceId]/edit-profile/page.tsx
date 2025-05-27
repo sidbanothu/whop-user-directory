@@ -7,12 +7,10 @@ import { findOrCreateProfile } from "@/lib/db";
 import { Profile, ProfileSection } from "@/lib/types/profile";
 import { whopApi } from "@/lib/whop-api";
 
-export default async function EditProfilePage({ params, searchParams }) {
-  const whopToken = searchParams["whop-dev-user-token"];
-  if (!whopToken || Array.isArray(whopToken)) {
-    throw new Error("No Whop token provided");
-  }
-  const { userId } = await verifyUserToken(whopToken);
+export default async function EditProfilePage({ params }: { params: Promise<{ experienceId: string }> }) {
+  const { experienceId } = await params;
+  const headersList = await headers();
+  const { userId } = await verifyUserToken(headersList);
 
   // Fetch Whop user info
   const whopUser = (await whopApi.getUser({ userId })).publicUser;
@@ -28,7 +26,7 @@ export default async function EditProfilePage({ params, searchParams }) {
   // Use our new helper to find or create profile
   const profile = await findOrCreateProfile({
     userId,
-    experienceId: params.experienceId,
+    experienceId,
     defaultUsername: whopUser.username ?? "",
     defaultName: whopUser.name ?? "",
     defaultBio: whopUser.bio ?? "",
@@ -61,13 +59,13 @@ export default async function EditProfilePage({ params, searchParams }) {
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-1">Community Hub</h1>
       <p className="text-gray-500 text-base mb-4">Manage your profile and connect with community members</p>
-      <DirectoryToggle experienceId={params.experienceId} activeTab="edit-profile" />
+      <DirectoryToggle experienceId={experienceId} activeTab="edit-profile" />
       {justCreated && (
         <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded">
           Create your profile to join the directory!
         </div>
       )}
-      <ProfileForm experienceId={params.experienceId} initialData={transformedProfile} />
+      <ProfileForm experienceId={experienceId} initialData={transformedProfile} />
     </main>
   );
 } 

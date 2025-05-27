@@ -2,15 +2,11 @@ import { PrismaClient } from "./generated/prisma";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
+console.log(process.env.DATABASE_URL_SERVICE_ROLE);
+
 // Use service role connection string to bypass RLS
 const prismaClientSingleton = () => {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL_SERVICE_ROLE, // Use service role connection string
-      },
-    },
-  });
+  return new PrismaClient()
 };
 
 export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();

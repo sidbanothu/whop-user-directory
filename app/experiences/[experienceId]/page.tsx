@@ -7,19 +7,19 @@ import { SearchBar } from "@/components/directory/SearchBar";
 import { DirectoryToggle } from "@/components/directory/DirectoryToggle";
 import { findOrCreateProfile } from "@/lib/db";
 
-export default async function ExperiencePage({ params }) {
+export default async function ExperiencePage({ params }: {params: Promise<{experienceId: string}>} ) {
   // The headers contains the user token
   const headersList = await headers();
   // The experienceId is a path param
-  const { experienceId } = params;
+  const { experienceId } = await params;
 
   // The user token is in the headers
   const { userId } = await verifyUserToken(headersList);
-  console.log(userId, "first check");
+//   console.log(userId, "first check");
 
   // Fetch Whop user info
   const whopUser = (await whopApi.getUser({ userId })).publicUser;
-  console.log(whopUser, "this is user info");
+//   console.log(whopUser, "this is user info");
 
   // Ensure the user has a profile for this experience (create if needed)
   const profile = await findOrCreateProfile({
