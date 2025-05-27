@@ -5,27 +5,37 @@ import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
 import { findOrCreateProfile } from "@/lib/db";
 import { Profile, ProfileSection } from "@/lib/types/profile";
+import { whopApi } from "@/lib/whop-api";
 
-export default async function EditProfilePage({ 
-  params,
-  searchParams,
-}: { 
-  params: { experienceId: string };
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const resolvedParams = await searchParams;
-  const whopToken = resolvedParams["whop-dev-user-token"];
+export default async function EditProfilePage({ params, searchParams }) {
+  const whopToken = searchParams["whop-dev-user-token"];
   if (!whopToken || Array.isArray(whopToken)) {
     throw new Error("No Whop token provided");
   }
   const { userId } = await verifyUserToken(whopToken);
 
+  // Fetch Whop user info
+  const whopUser = (await whopApi.getUser({ userId })).publicUser;
+
+  // Log the values being passed to findOrCreateProfile
+  console.log("About to call findOrCreateProfile", {
+    defaultUsername: whopUser.username,
+    defaultName: whopUser.name,
+    defaultBio: whopUser.bio,
+    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl,
+  });
+
   // Use our new helper to find or create profile
   const profile = await findOrCreateProfile({
     userId,
     experienceId: params.experienceId,
-    defaultUsername: "", // We'll let the user set this in the form
+    defaultUsername: whopUser.username ?? "",
+    defaultName: whopUser.name ?? "",
+    defaultBio: whopUser.bio ?? "",
+    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
   });
+
+  console.log("Profile after creation", profile);
 
   // Transform the profile to match the Profile type
   const transformedProfile: Profile = {
