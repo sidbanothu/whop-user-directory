@@ -30,15 +30,13 @@ export function SearchBar({ experienceId, tab }: { experienceId: string; tab?: s
 
   return (
     <div className="relative w-full">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
-        <Search className="w-5 h-5" />
-      </span>
       <input
         type="search"
         placeholder="Search members by name, skills, or interests..."
-        className="w-full pl-12 pr-4 py-3 rounded-full bg-white/90 backdrop-blur-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base text-gray-700 placeholder-gray-400 transition-all"
+        className="w-full pl-8 pr-8 py-4 rounded-full bg-white/95 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-lg text-gray-700 placeholder-gray-500 font-semibold text-center transition-all border-none"
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
+        style={{ boxShadow: '0 2px 16px 0 rgba(80, 63, 205, 0.08)' }}
       />
     </div>
   );

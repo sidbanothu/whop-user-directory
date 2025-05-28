@@ -73,20 +73,26 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       <header className="w-full flex flex-col items-center justify-center pt-16 pb-8">
         <h1 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">Community Hub</h1>
         <p className="text-lg text-white/90 mb-8 text-center max-w-2xl">Discover and connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-3xl mx-auto">
-          <div className="flex-1 w-full">
-            <SearchBar experienceId={experienceId} tab={activeFilter} />
-          </div>
-          <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-4 md:mt-0">
-            {FILTERS.map(f => (
-              <button
-                key={f.key}
-                className={`px-5 py-2 rounded-full font-medium text-base transition-all border ${activeFilter === f.key || (f.key === "all" && !searchParams.get("tab")) ? "bg-white text-indigo-600 shadow border-white" : "bg-white/10 text-white border-white/20 hover:bg-white/20"}`}
-                onClick={() => handleFilter(f.key)}
-              >
-                {f.label}
-              </button>
-            ))}
+        <div className="w-full max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center w-full gap-3">
+            <div className="flex-1 w-full">
+              <SearchBar experienceId={experienceId} tab={activeFilter} />
+            </div>
+            <div className="flex flex-row gap-2 mt-3 md:mt-0 h-[56px]">
+              {FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  className={`px-6 py-4 rounded-full font-bold text-base transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-300 h-full
+                    ${activeFilter === f.key || (f.key === "all" && !searchParams.get("tab"))
+                      ? "bg-white text-indigo-600 shadow-md"
+                      : "bg-transparent text-white hover:bg-white/10"}
+                  `}
+                  onClick={() => handleFilter(f.key)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="w-full max-w-3xl mx-auto text-right text-white/80 text-sm mt-2">

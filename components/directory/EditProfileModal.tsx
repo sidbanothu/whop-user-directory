@@ -332,7 +332,9 @@ export function EditProfileModal({ profile, onClose, onSave }: EditProfileModalP
           {/* Optional Sections */}
           <div>
             <h3 className="text-xl font-bold mb-4">Optional Sections</h3>
-            {(["gamer", "creator", "developer", "trader", "student"] as ProfileSection["type"][]).map(type => renderSection(type))}
+            {(["gamer", "creator", "developer", "trader", "student"] as ProfileSection["type"][]).map(type => (
+              <div key={type}>{renderSection(type)}</div>
+            ))}
           </div>
           {/* Action Buttons */}
           <div className="flex justify-end gap-4 pt-4 border-t">

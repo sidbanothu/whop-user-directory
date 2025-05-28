@@ -20,7 +20,7 @@ export function useProfiles(query: string, tab?: string) {
           .order("updated_at", { ascending: false });
 
         if (query) {
-          queryBuilder = queryBuilder.textSearch("search_vector", query);
+          queryBuilder = queryBuilder.or(`username.ilike.%${query}%,name.ilike.%${query}%`);
         }
 
         const { data, error: supabaseError } = await queryBuilder;
