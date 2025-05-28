@@ -39,7 +39,24 @@ function getNumberFieldFromSections(profile: Profile, keys: string[]): number | 
 export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCardProps) {
   const [showModal, setShowModal] = useState(false);
 
-  // Example: extract skills and stats from profile.sections
+  // Section badges
+  const sectionIcons: Record<string, string> = {
+    gamer: "🎮",
+    creator: "🎨",
+    developer: "👨‍💻",
+    trader: "📈",
+    student: "🎓",
+  };
+  const sectionLabels: Record<string, string> = {
+    gamer: "Gamer",
+    creator: "Creator",
+    developer: "Developer",
+    trader: "Trader",
+    student: "Student",
+  };
+  const activeSections = profile.sections.map(s => s.type).filter(Boolean);
+
+  // Skills (languages)
   const developerSection = profile.sections.find((s) => s.type === "developer");
   let skills: string[] = [];
   if (developerSection?.data?.languages) {
@@ -49,11 +66,16 @@ export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCard
       skills = [developerSection.data.languages];
     }
   }
-  const stats = [
-    { label: "Projects", value: developerSection?.data?.projects?.length || 0 },
-    { label: "Rating", value: 4.9 }, // Placeholder
-    { label: "Followers", value: "2.5k" }, // Placeholder
-  ];
+  // Games
+  const gamerSection = profile.sections.find((s) => s.type === "gamer");
+  let games: string[] = [];
+  if (gamerSection?.data?.games) {
+    if (Array.isArray(gamerSection.data.games)) {
+      games = gamerSection.data.games;
+    } else if (typeof gamerSection.data.games === "string") {
+      games = [gamerSection.data.games];
+    }
+  }
 
   const handleClick = () => {
     setShowModal(true);
@@ -105,24 +127,29 @@ export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCard
           </div>
         </div>
         <div className="bio text-gray-700 mb-4 line-clamp-2">{profile.bio}</div>
-        <div className="skills flex flex-wrap gap-2 mb-4">
-          {skills.map((skill: string, i: number) => (
-            <span
-              key={i}
-              className="skill-tag bg-gradient-to-br from-indigo-400 to-purple-400 text-white px-3 py-1 rounded-full text-xs font-medium"
-            >
-              {skill}
+        {/* Section badges */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {activeSections.map((type, i) => (
+            <span key={i} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100">
+              <span>{sectionIcons[type]}</span>
+              <span>{sectionLabels[type]}</span>
             </span>
           ))}
         </div>
-        <div className="user-stats flex justify-between mt-4 pt-4 border-t border-gray-200">
-          {stats.map((stat, i) => (
-            <div className="stat text-center" key={i}>
-              <div className="stat-value font-semibold text-gray-900 text-lg">{stat.value}</div>
-              <div className="stat-label text-xs text-gray-500 mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </div>
+        {/* Skills row */}
+        {skills.length > 0 && (
+          <div className="flex items-center gap-2 text-gray-700 text-base mb-1">
+            <span role="img" aria-label="skills">💻</span>
+            <span>{skills.join(", ")}</span>
+          </div>
+        )}
+        {/* Games row */}
+        {games.length > 0 && (
+          <div className="flex items-center gap-2 text-gray-700 text-base">
+            <span role="img" aria-label="games">🎯</span>
+            <span>{games.join(", ")}</span>
+          </div>
+        )}
       </div>
 
       {/* Profile Modal */}

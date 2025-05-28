@@ -25,7 +25,7 @@ export async function updateProfile({
         username,
         name,
         bio,
-        sections,
+        sections: sections as any,
         updated_at: new Date(),
       },
     });
@@ -37,6 +37,9 @@ export async function updateProfile({
     return { success: true, profile: updatedProfile };
   } catch (error) {
     console.error("Error updating profile:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
     return { success: false, error: "Failed to update profile" };
   }
 } 

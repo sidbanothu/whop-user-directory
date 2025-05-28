@@ -5,6 +5,8 @@ import { DirectoryGrid } from "./DirectoryGrid";
 import { SearchBar } from "./SearchBar";
 import { EditProfileModal } from "./EditProfileModal";
 import { Profile } from "@/lib/types/profile";
+import { updateProfile } from "@/app/actions/profile";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface DirectoryPageClientWithEditProps {
   experienceId: string;
@@ -12,10 +14,21 @@ interface DirectoryPageClientWithEditProps {
   accessLevel: string;
 }
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "developers", label: "Developers" },
+  { key: "creators", label: "Creators" },
+  { key: "traders", label: "Traders" },
+  { key: "students", label: "Students" },
+];
+
 export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel }: DirectoryPageClientWithEditProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const activeFilter = searchParams.get("tab") || "all";
 
   useEffect(() => {
     async function fetchCurrentUserProfile() {
@@ -33,36 +46,96 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
 
   const canEdit = accessLevel === "admin" || accessLevel === "customer";
 
+  // Filter bar handler
+  const handleFilter = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (key === "all") {
+      params.delete("tab");
+    } else {
+      params.set("tab", key);
+    }
+    router.push(`?${params.toString()}`);
+  };
+
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Community Directory</h1>
-        <SearchBar />
-      </div>
-      <Suspense fallback={<div>Loading profiles...</div>}>
-        <DirectoryGrid experienceId={experienceId} currentUserId={userId} canEdit={canEdit} />
-      </Suspense>
+    <div className="min-h-screen w-full bg-gradient-to-br from-indigo-400 via-purple-400 to-indigo-500 flex flex-col items-center py-0 px-0 relative">
       {/* Floating Edit Profile Button */}
       {canEdit && currentProfile && (
         <button
-          className="fixed top-8 right-8 z-50 bg-white/90 backdrop-blur-lg px-6 py-3 rounded-full shadow-lg text-indigo-500 font-semibold flex items-center gap-2 hover:bg-indigo-500 hover:text-white transition-all text-base"
+          className="fixed top-8 right-8 z-50 bg-white px-6 py-3 rounded-full shadow-lg text-yellow-500 font-semibold flex items-center gap-2 hover:bg-yellow-50 hover:text-yellow-600 transition-all text-base border border-yellow-100"
           onClick={() => setShowEditModal(true)}
         >
           <span>✏️</span>
           <span>Edit Profile</span>
         </button>
       )}
+      {/* Header */}
+      <header className="w-full flex flex-col items-center justify-center pt-16 pb-8">
+        <h1 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">Community Hub</h1>
+        <p className="text-lg text-white/90 mb-8 text-center max-w-2xl">Discover and connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-3xl mx-auto">
+          <div className="flex-1 w-full">
+            <SearchBar experienceId={experienceId} tab={activeFilter} />
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-4 md:mt-0">
+            {FILTERS.map(f => (
+              <button
+                key={f.key}
+                className={`px-5 py-2 rounded-full font-medium text-base transition-all border ${activeFilter === f.key || (f.key === "all" && !searchParams.get("tab")) ? "bg-white text-indigo-600 shadow border-white" : "bg-white/10 text-white border-white/20 hover:bg-white/20"}`}
+                onClick={() => handleFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="w-full max-w-3xl mx-auto text-right text-white/80 text-sm mt-2">
+          {/* Show count if available */}
+        </div>
+      </header>
+      <main className="w-full max-w-7xl px-4 pb-16">
+        <Suspense fallback={<div>Loading profiles...</div>}>
+          <DirectoryGrid experienceId={experienceId} currentUserId={userId} canEdit={canEdit} tab={activeFilter} />
+        </Suspense>
+      </main>
       {/* Edit Profile Modal */}
       {showEditModal && currentProfile && (
         <EditProfileModal
           profile={currentProfile}
           onClose={() => setShowEditModal(false)}
-          onSave={async () => {
-            setShowEditModal(false);
-            // Optionally, refetch profile here
+          onSave={async (updatedProfile) => {
+            try {
+              const result = await updateProfile({
+                id: updatedProfile.id,
+                experienceId,
+                username: updatedProfile.username,
+                name: updatedProfile.name,
+                bio: updatedProfile.bio,
+                sections: updatedProfile.sections.map(section => ({
+                  type: section.type,
+                  data: section.data,
+                })),
+              });
+              if (!result.success) {
+                throw new Error(result.error || 'Failed to update profile');
+              }
+              setShowEditModal(false);
+              // Refetch the current profile
+              const res = await fetch(`/api/profile?userId=${userId}&experienceId=${experienceId}`);
+              const data = await res.json();
+              if (data && data.profile) {
+                setCurrentProfile(data.profile);
+                router.refresh();
+              } else {
+                throw new Error('Failed to refetch profile');
+              }
+            } catch (error) {
+              console.error("Failed to update profile:", error);
+              alert(error instanceof Error ? error.message : 'Failed to update profile');
+            }
           }}
         />
       )}
-    </main>
+    </div>
   );
 } 

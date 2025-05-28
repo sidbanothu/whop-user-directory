@@ -13,14 +13,20 @@ interface DirectoryGridProps {
   experienceId: string;
   currentUserId: string;
   canEdit: boolean;
+  tab?: string;
 }
 
-export function DirectoryGrid({ experienceId, currentUserId, canEdit }: DirectoryGridProps) {
+export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: DirectoryGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") ?? "";
   const { profiles, isLoading, error } = useProfiles(query);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+
+  // Filter by section type if tab is set and not 'all'
+  const filteredProfiles = tab && tab !== "all"
+    ? profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1))) // e.g. 'developers' -> 'developer'
+    : profiles;
 
   const handleEditProfile = (profile: Profile) => {
     setEditingProfile(profile);
@@ -28,7 +34,8 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit }: Director
 
   const handleSaveProfile = async (updatedProfile: Profile) => {
     try {
-      await updateProfile({
+      console.log('DirectoryGrid: Starting profile update...');
+      const result = await updateProfile({
         id: updatedProfile.id,
         experienceId,
         username: updatedProfile.username,
@@ -39,10 +46,17 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit }: Director
           data: section.data,
         })),
       });
-      router.refresh(); // Refresh the page to show updated data
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile');
+      }
+
+      setEditingProfile(null);
+      // Force a refresh of the profiles data
+      router.refresh();
     } catch (error) {
       console.error("Failed to update profile:", error);
-      // TODO: Show error toast
+      alert(error instanceof Error ? error.message : 'Failed to update profile');
     }
   };
 
@@ -67,10 +81,10 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit }: Director
     );
   }
 
-  if (!profiles?.length) {
+  if (!filteredProfiles?.length) {
     return (
       <div className="text-center text-muted-foreground">
-        No profiles found. Try adjusting your search.
+        No profiles found. Try adjusting your search or filters.
       </div>
     );
   }
@@ -78,7 +92,7 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit }: Director
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {profiles.map((profile) => (
+        {filteredProfiles.map((profile) => (
           <ProfileCard 
             key={profile.id} 
             profile={profile}

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
-export function SearchBar() {
+export function SearchBar({ experienceId, tab }: { experienceId: string; tab?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
@@ -20,9 +20,12 @@ export function SearchBar() {
       } else {
         params.delete("q");
       }
-      router.push(`/directory?${params.toString()}`);
+      if (tab && tab !== "all") {
+        params.set("tab", tab);
+      }
+      router.push(`/experiences/${experienceId}?${params.toString()}`);
     },
-    [router, searchParams]
+    [router, searchParams, experienceId, tab]
   );
 
   return (
