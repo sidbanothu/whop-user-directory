@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
@@ -27,12 +26,14 @@ export function SearchBar() {
   );
 
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
+    <div className="relative w-full">
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
+        <Search className="w-5 h-5" />
+      </span>
+      <input
         type="search"
-        placeholder="Search profiles..."
-        className="pl-9"
+        placeholder="Search members by name, skills, or interests..."
+        className="w-full pl-12 pr-4 py-3 rounded-full bg-white/90 backdrop-blur-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base text-gray-700 placeholder-gray-400 transition-all"
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
       />

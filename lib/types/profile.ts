@@ -1,7 +1,7 @@
 export type ProfileSection = {
   type: "gamer" | "creator" | "trader" | "developer" | "student";
   title: string;
-  data: Record<string, string | string[]>;
+  data: { [key: string]: string | string[] | Record<string, string> };
 };
 
 export type Profile = {

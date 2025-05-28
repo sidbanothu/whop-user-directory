@@ -24,3 +24,144 @@ body {
 	color: var(--foreground);
 	font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom animations */
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes slideUp {
+	from { 
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to { 
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes scaleIn {
+	from { 
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to { 
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Apply animations */
+.animate-fadeIn {
+	animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUp {
+	animation: slideUp 0.3s ease-out;
+}
+
+.animate-scaleIn {
+	animation: scaleIn 0.2s ease-out;
+}
+
+/* Custom scrollbar */
+.modal-content::-webkit-scrollbar {
+	width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+	background: #e2e8f0;
+	border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+	background: #cbd5e1;
+}
+
+/* Glass effect */
+.glass-effect {
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient text */
+.gradient-text {
+	@apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400;
+}
+
+/* Custom focus styles */
+.custom-focus {
+	@apply focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+	.user-card {
+		@apply p-6;
+	}
+	
+	.modal-content {
+		@apply w-[95%] max-h-[95vh];
+	}
+	
+	.user-header {
+		@apply flex-col items-start gap-4;
+	}
+	
+	.avatar {
+		@apply w-14 h-14 text-xl;
+	}
+	
+	.user-stats {
+		@apply grid grid-cols-3 gap-2;
+	}
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+	.user-card {
+		@apply bg-gray-900/90 text-white;
+	}
+	
+	.user-card .text-gray-700 {
+		@apply text-gray-300;
+	}
+	
+	.user-card .text-gray-900 {
+		@apply text-white;
+	}
+	
+	.user-card .border-gray-200 {
+		@apply border-gray-700;
+	}
+	
+	.modal-content {
+		@apply bg-gray-900 text-white;
+	}
+	
+	.modal-content input,
+	.modal-content textarea {
+		@apply bg-gray-800 border-gray-700 text-white;
+	}
+	
+	.modal-content input::placeholder,
+	.modal-content textarea::placeholder {
+		@apply text-gray-400;
+	}
+	
+	.modal-content::-webkit-scrollbar-thumb {
+		@apply bg-gray-700;
+	}
+	
+	.modal-content::-webkit-scrollbar-thumb:hover {
+		@apply bg-gray-600;
+	}
+}

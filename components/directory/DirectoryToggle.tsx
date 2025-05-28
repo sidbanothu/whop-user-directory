@@ -3,33 +3,55 @@ import clsx from "clsx";
 
 interface DirectoryToggleProps {
   experienceId: string;
-  activeTab: "directory" | "edit-profile";
+  activeTab: "directory" | "developers" | "creators" | "traders";
 }
 
 export function DirectoryToggle({ experienceId, activeTab }: DirectoryToggleProps) {
   return (
-    <div className="flex w-full max-w-md rounded-lg bg-gray-100 p-1 mb-6">
+    <div className="tabs flex bg-white/20 backdrop-blur-lg rounded-full p-1 shadow-md gap-2 min-w-fit">
       <Link
         href={`/experiences/${experienceId}`}
         className={clsx(
-          "flex-1 text-center py-2 rounded-md font-medium text-sm transition-colors",
+          "tab px-6 py-2 rounded-full font-medium text-base transition-all",
           activeTab === "directory"
-            ? "bg-white text-black shadow-sm"
-            : "text-gray-500 hover:text-black"
+            ? "bg-white text-indigo-500 shadow"
+            : "text-white hover:bg-white/30 hover:text-indigo-100"
         )}
       >
-        User Directory
+        All Members
       </Link>
       <Link
-        href={`/experiences/${experienceId}/edit-profile`}
+        href={`/experiences/${experienceId}?tab=developers`}
         className={clsx(
-          "flex-1 text-center py-2 rounded-md font-medium text-sm transition-colors",
-          activeTab === "edit-profile"
-            ? "bg-white text-black shadow-sm"
-            : "text-gray-500 hover:text-black"
+          "tab px-6 py-2 rounded-full font-medium text-base transition-all",
+          activeTab === "developers"
+            ? "bg-white text-indigo-500 shadow"
+            : "text-white hover:bg-white/30 hover:text-indigo-100"
         )}
       >
-        Edit Profile
+        Developers
+      </Link>
+      <Link
+        href={`/experiences/${experienceId}?tab=creators`}
+        className={clsx(
+          "tab px-6 py-2 rounded-full font-medium text-base transition-all",
+          activeTab === "creators"
+            ? "bg-white text-indigo-500 shadow"
+            : "text-white hover:bg-white/30 hover:text-indigo-100"
+        )}
+      >
+        Creators
+      </Link>
+      <Link
+        href={`/experiences/${experienceId}?tab=traders`}
+        className={clsx(
+          "tab px-6 py-2 rounded-full font-medium text-base transition-all",
+          activeTab === "traders"
+            ? "bg-white text-indigo-500 shadow"
+            : "text-white hover:bg-white/30 hover:text-indigo-100"
+        )}
+      >
+        Traders
       </Link>
     </div>
   );

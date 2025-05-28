@@ -57,7 +57,7 @@ export default async function EditProfilePage({ params }: { params: Promise<{ ex
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <DirectoryToggle experienceId={experienceId} activeTab="edit-profile" />
+      <DirectoryToggle experienceId={experienceId} activeTab="directory" />
       <p className="text-gray-500 text-base mb-4">Manage your profile and connect with community members</p>
       {justCreated && (
         <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded">
