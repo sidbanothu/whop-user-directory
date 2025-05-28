@@ -12,9 +12,12 @@ export function BasicInfoSection() {
       {/* TODO: Add form fields for username, name, bio, avatar */}
       <div className="space-y-4">
         <div>
+          <label htmlFor="username" className="block font-medium mb-1">Username</label>
           <input
-            className="w-full border rounded px-3 py-2"
+            id="username"
+            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
             placeholder="Username"
+            readOnly
             {...register("username", {
               required: "Username is required",
               minLength: { value: 2, message: "Min 2 characters" },
@@ -26,7 +29,9 @@ export function BasicInfoSection() {
           )}
         </div>
         <div>
+          <label htmlFor="name" className="block font-medium mb-1">Name</label>
           <input
+            id="name"
             className="w-full border rounded px-3 py-2"
             placeholder="Name"
             {...register("name", {
@@ -40,7 +45,9 @@ export function BasicInfoSection() {
           )}
         </div>
         <div>
+          <label htmlFor="bio" className="block font-medium mb-1">Bio</label>
           <textarea
+            id="bio"
             className="w-full border rounded px-3 py-2"
             placeholder="Bio"
             {...register("bio", {

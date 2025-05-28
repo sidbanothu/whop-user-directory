@@ -45,9 +45,8 @@ export default async function ExperiencePage({ params }: {params: Promise<{exper
 
   return (
     <main className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-1">Community Directory</h1>
-      <p className="text-gray-500 text-base mb-4">Discover members in this community</p>
       <DirectoryToggle experienceId={experienceId} activeTab="directory" />
+      <p className="text-gray-500 text-base mb-4">Discover and connect with people in this Whop. Every member has a custom profile so you can see who they are, what they do, and how to reach out. </p>
       <div className="mb-6">
         <SearchBar />
       </div>
