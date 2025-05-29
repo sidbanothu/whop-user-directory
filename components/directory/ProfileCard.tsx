@@ -128,7 +128,14 @@ export function ProfileCard({ profile, onEdit, isEditable = false, enabledSectio
             )}
           </div>
           <div className="user-info">
-            <h3 className="text-xl font-semibold mb-1 text-gray-900">{profile.name}</h3>
+            <h3 className="text-xl font-semibold mb-1 text-gray-900 flex items-center gap-2">
+              {profile.name}
+              {profile.is_premium_member && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-400 text-white text-xs font-bold ml-2 shadow" title="Premium Member">
+                  <span role="img" aria-label="star">🌟</span> Premium
+                </span>
+              )}
+            </h3>
             <div className="username text-indigo-500 font-medium text-sm">@{profile.username}</div>
           </div>
         </div>

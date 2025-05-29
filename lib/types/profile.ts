@@ -15,4 +15,5 @@ export type Profile = {
   sections: ProfileSection[];
   createdAt: string;
   updatedAt: string;
+  is_premium_member?: boolean;
 }; 

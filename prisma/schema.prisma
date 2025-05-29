@@ -20,6 +20,7 @@ model profiles {
   sections      Json?                    @default("[]")
   created_at    DateTime?                @default(now()) @db.Timestamptz(6)
   updated_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  is_premium_member Boolean              @default(false)
   // search_vector Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('english'::regconfig, COALESCE(name, ''::text)), 'A'::\"char\") || setweight(to_tsvector('english'::regconfig, COALESCE(username, ''::text)), 'B'::\"char\")) || setweight(to_tsvector('english'::regconfig, COALESCE(bio, ''::text)), 'C'::\"char\")) || setweight(to_tsvector('english'::regconfig, COALESCE((sections)::text, ''::text)), 'D'::\"char\"))"))
 
   @@unique([experience_id, username], map: "profiles_community_username_idx")

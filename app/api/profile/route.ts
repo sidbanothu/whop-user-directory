@@ -24,12 +24,20 @@ export async function GET(req: NextRequest) {
 
   // Transform to camelCase and parse sections if needed
   const transformed = {
-    ...profile,
+    id: profile.id,
+    userId: profile.user_id,
+    experience_id: profile.experience_id,
+    username: profile.username,
+    name: profile.name,
+    bio: profile.bio,
     avatarUrl: profile.avatar_url,
+    sections: typeof profile.sections === "string" ? JSON.parse(profile.sections) : profile.sections,
     createdAt: profile.created_at,
     updatedAt: profile.updated_at,
-    sections: typeof profile.sections === "string" ? JSON.parse(profile.sections) : profile.sections,
+    is_premium_member: profile.is_premium_member,
   };
+
+  console.log('[api/profile] Returning profile:', transformed);
 
   return Response.json({ profile: transformed });
 } 

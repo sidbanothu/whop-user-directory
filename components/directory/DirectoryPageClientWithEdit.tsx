@@ -50,10 +50,8 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
     async function fetchEnabledSections() {
       const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
       const data = await res.json();
-      console.log('[DirectoryPageClientWithEdit] fetched enabledSections:', data.settings?.profileSections);
       setEnabledSections(data.settings?.profileSections || []);
       setThemeColor(data.settings?.color || null);
-      console.log('[DirectoryPageClientWithEdit] fetched themeColor:', data.settings?.color);
     }
     fetchEnabledSections();
 
@@ -138,7 +136,6 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       {/* Edit Profile Modal */}
       {showEditModal && currentProfile && enabledSections && (
         (() => {
-          console.log('[DirectoryPageClientWithEdit] Rendering EditProfileModal with enabledSections:', enabledSections);
           return (
             <EditProfileModal
               profile={currentProfile}

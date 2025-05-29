@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Profile, ProfileSection } from "@/lib/types/profile";
 import { ProfileForm } from "@/components/profile/ProfileForm";
+import { PremiumBadgeButton } from "@/components/PremiumBadgeButton";
 
 interface EditProfileModalProps {
   profile: Profile;
@@ -78,7 +79,22 @@ export function EditProfileModal({ profile, onClose, onSave, enabledSections }: 
         <div className="bg-gradient-to-r from-indigo-400 to-purple-400 p-8 rounded-t-2xl relative">
           <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors text-2xl font-bold" onClick={onClose}>&times;</button>
           <h2 className="text-3xl font-bold text-white mb-1">Edit Your Profile</h2>
-          <div className="text-white text-base opacity-80">Manage your profile and connect with community members</div>
+          <div className="text-white text-base opacity-80 mb-4">Manage your profile and connect with community members</div>
+          {/* Premium Status */}
+          <div className="flex items-center gap-4 mb-2">
+            {profile.is_premium_member ? (
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400 text-white font-semibold text-lg shadow">
+                <span role="img" aria-label="star">🌟</span> Premium Member
+              </span>
+            ) : (
+              <>
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-semibold text-lg">
+                  <span role="img" aria-label="star">⭐</span> Not Premium
+                </span>
+                <PremiumBadgeButton userId={profile.userId} experienceId={profile.experience_id} />
+              </>
+            )}
+          </div>
         </div>
         {/* Modal Body */}
         <div className="p-8 space-y-8 overflow-y-auto">

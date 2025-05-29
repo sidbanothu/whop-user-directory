@@ -34,7 +34,6 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
   }, [experienceId]);
 
   if (!enabledSections) {
-    console.log('[DirectoryGrid] enabledSections not loaded yet');
     return <div>Loading directory...</div>;
   }
 

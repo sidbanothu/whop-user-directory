@@ -240,7 +240,18 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
               )}
             </div>
             <div className="text-white">
-              <h2 className="text-3xl font-bold mb-1">{profile.name}</h2>
+              <h2 className="text-3xl font-bold mb-1 flex items-center gap-3">
+                {profile.name}
+                {profile.is_premium_member ? (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400 text-white font-semibold text-base shadow">
+                    <span role="img" aria-label="star">🌟</span> Premium Member
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-semibold text-base">
+                    <span role="img" aria-label="star">⭐</span> Not Premium
+                  </span>
+                )}
+              </h2>
               <div className="text-lg opacity-90 mb-1">@{profile.username}</div>
               {profile.bio && <p className="text-base opacity-80 max-w-2xl">{profile.bio}</p>}
             </div>
