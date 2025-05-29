@@ -39,7 +39,7 @@ export default async function EditProfilePage({ params }: { params: Promise<{ ex
   const transformedProfile: Profile = {
     id: profile.id,
     userId: profile.user_id,
-    communityId: profile.experience_id,
+    experience_id: profile.experience_id,
     username: profile.username,
     name: profile.name,
     bio: profile.bio ?? "",

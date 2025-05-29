@@ -5,6 +5,7 @@ import { Profile, ProfileSection } from "@/lib/types/profile";
 interface ProfileModalProps {
   profile: Profile;
   onClose: () => void;
+  enabledSections?: string[];
 }
 
 const sectionIcons: Record<string, string> = {
@@ -23,8 +24,14 @@ const sectionTitles: Record<string, string> = {
   student: "Academic Profile",
 };
 
-export function ProfileModal({ profile, onClose }: ProfileModalProps) {
+export function ProfileModal({ profile, onClose, enabledSections }: ProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+
+  console.log('[ProfileModal] enabledSections:', enabledSections);
+  const filteredSections = profile.sections && profile.sections.length > 0
+    ? profile.sections.filter(section => !enabledSections || enabledSections.includes(section.type))
+    : [];
+  console.log('[ProfileModal] filteredSections:', filteredSections.map(s => s.type));
 
   // Close modal on escape key press
   useEffect(() => {
@@ -241,8 +248,8 @@ export function ProfileModal({ profile, onClose }: ProfileModalProps) {
         </div>
         {/* Modal Body (sections) */}
         <div className="p-8 bg-gray-50 rounded-b-2xl">
-          {profile.sections && profile.sections.length > 0 ? (
-            profile.sections.map((section, idx) => (
+          {filteredSections.length > 0 ? (
+            filteredSections.map((section, idx) => (
               <React.Fragment key={idx}>{renderSection(section)}</React.Fragment>
             ))
           ) : (

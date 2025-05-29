@@ -5,7 +5,7 @@ import { ProfileCard } from "./ProfileCard";
 import { EditProfileModal } from "./EditProfileModal";
 import { useProfiles } from "@/lib/hooks/use-profiles";
 import { Profile } from "@/lib/types/profile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateProfile } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
 
@@ -19,13 +19,28 @@ interface DirectoryGridProps {
 export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: DirectoryGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const query = searchParams.get("q") ?? "";
-  const { profiles, isLoading, error } = useProfiles(query);
+  const { profiles, isLoading, error } = useProfiles(experienceId);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    async function fetchEnabledSections() {
+      const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
+      const data = await res.json();
+      console.log('[DirectoryGrid] fetched enabledSections:', data.settings?.profileSections);
+      setEnabledSections(data.settings?.profileSections || []);
+    }
+    fetchEnabledSections();
+  }, [experienceId]);
+
+  if (!enabledSections) {
+    console.log('[DirectoryGrid] enabledSections not loaded yet');
+    return <div>Loading directory...</div>;
+  }
 
   // Filter by section type if tab is set and not 'all'
   const filteredProfiles = tab && tab !== "all"
-    ? profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1))) // e.g. 'developers' -> 'developer'
+    ? profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1) && enabledSections.includes(s.type)))
     : profiles;
 
   const handleEditProfile = (profile: Profile) => {
@@ -99,17 +114,24 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
             onEdit={handleEditProfile}
             isEditable={canEdit && currentUserId === profile.userId}
             currentUserId={currentUserId}
+            enabledSections={enabledSections}
           />
         ))}
       </div>
 
       {/* Edit Profile Modal */}
-      {editingProfile && (
-        <EditProfileModal
-          profile={editingProfile}
-          onClose={() => setEditingProfile(null)}
-          onSave={handleSaveProfile}
-        />
+      {editingProfile && enabledSections && (
+        (() => {
+          console.log('[DirectoryGrid] Rendering EditProfileModal with enabledSections:', enabledSections);
+          return (
+            <EditProfileModal
+              profile={editingProfile}
+              onClose={() => setEditingProfile(null)}
+              onSave={handleSaveProfile}
+              enabledSections={enabledSections}
+            />
+          );
+        })()
       )}
     </>
   );

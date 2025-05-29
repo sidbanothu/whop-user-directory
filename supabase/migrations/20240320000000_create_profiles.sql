@@ -2,7 +2,7 @@
 CREATE TABLE profiles (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
-  community_id UUID NOT NULL,
+  experience_id UUID NOT NULL,
   username TEXT NOT NULL,
   name TEXT NOT NULL,
   bio TEXT,
@@ -20,12 +20,12 @@ CREATE TABLE profiles (
 
 -- Create indexes
 CREATE INDEX profiles_user_id_idx ON profiles(user_id);
-CREATE INDEX profiles_community_id_idx ON profiles(community_id);
+CREATE INDEX profiles_experience_id_idx ON profiles(experience_id);
 CREATE INDEX profiles_username_idx ON profiles(username);
 CREATE INDEX profiles_search_vector_idx ON profiles USING GIN (search_vector);
 
 -- Create unique constraint for username within a community
-CREATE UNIQUE INDEX profiles_community_username_idx ON profiles(community_id, username);
+CREATE UNIQUE INDEX profiles_experience_username_idx ON profiles(experience_id, username);
 
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;

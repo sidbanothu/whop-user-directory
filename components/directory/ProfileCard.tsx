@@ -12,6 +12,7 @@ interface ProfileCardProps {
   onEdit?: (profile: Profile) => void;
   isEditable?: boolean;
   currentUserId?: string | null;
+  enabledSections?: string[];
 }
 
 const MAX_TAGS = 3;
@@ -36,7 +37,12 @@ function getNumberFieldFromSections(profile: Profile, keys: string[]): number | 
   return undefined;
 }
 
-export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCardProps) {
+function isValidAvatarUrl(url?: string | null) {
+  if (!url) return false;
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
+}
+
+export function ProfileCard({ profile, onEdit, isEditable = false, enabledSections }: ProfileCardProps) {
   const [showModal, setShowModal] = useState(false);
 
   // Section badges
@@ -54,7 +60,7 @@ export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCard
     trader: "Trader",
     student: "Student",
   };
-  const activeSections = profile.sections.map(s => s.type).filter(Boolean);
+  const activeSections = profile.sections.map(s => s.type).filter(type => !enabledSections || enabledSections.includes(type));
 
   // Skills (languages)
   const developerSection = profile.sections.find((s) => s.type === "developer");
@@ -109,16 +115,16 @@ export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCard
 
         <div className="user-header flex items-center mb-6">
           <div className="avatar w-16 h-16 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-2xl shadow-lg mr-4">
-            {profile.avatarUrl ? (
+            {isValidAvatarUrl(profile.avatarUrl) ? (
               <Image
-                src={profile.avatarUrl}
+                src={profile.avatarUrl!}
                 alt={profile.name}
                 width={64}
                 height={64}
                 className="rounded-full object-cover"
               />
             ) : (
-              <span>{profile.name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "U"}</span>
+              <span>{profile.name?.split(" ").map((n) => n[0]).join("").toUpperCase() || profile.username?.[0]?.toUpperCase() || "U"}</span>
             )}
           </div>
           <div className="user-info">
@@ -157,6 +163,7 @@ export function ProfileCard({ profile, onEdit, isEditable = false }: ProfileCard
         <ProfileModal
           profile={profile}
           onClose={() => setShowModal(false)}
+          enabledSections={enabledSections}
         />
       )}
     </>

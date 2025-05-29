@@ -7,7 +7,7 @@ import { OptionalSections } from "./OptionalSections";
 import { LivePreview } from "./LivePreview";
 import { Profile } from "@/lib/types/profile";
 import { updateProfile } from "@/app/actions/profile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProfileFormData {
   username: string;
@@ -25,10 +25,19 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    async function fetchEnabledSections() {
+      const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
+      const data = await res.json();
+      setEnabledSections(data.settings?.profileSections || []);
+    }
+    fetchEnabledSections();
+  }, [experienceId]);
 
   const methods = useForm<ProfileFormData>({
     defaultValues: {
-      username: initialData?.username || "",
       name: initialData?.name || "",
       bio: initialData?.bio || "",
       sections: initialData?.sections ? 
@@ -51,7 +60,7 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
       const result = await updateProfile({
         id: initialData.id,
         experienceId,
-        username: data.username,
+        username: initialData.username,
         name: data.name,
         bio: data.bio,
         sections: Object.entries(data.sections).map(([type, data]) => ({
@@ -73,12 +82,16 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
     }
   };
 
+  if (!enabledSections) {
+    return <div>Loading profile editor...</div>;
+  }
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-8">
-          <BasicInfoSection />
-          <OptionalSections />
+          <BasicInfoSection username={initialData?.username || ""} />
+          <OptionalSections enabledSections={enabledSections} />
           {error && (
             <div className="p-3 bg-red-50 text-red-700 rounded">
               {error}

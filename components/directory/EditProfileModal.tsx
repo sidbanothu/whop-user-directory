@@ -6,6 +6,7 @@ interface EditProfileModalProps {
   profile: Profile;
   onClose: () => void;
   onSave: (updatedProfile: Profile) => Promise<void>;
+  enabledSections?: string[];
 }
 
 const sectionMeta = {
@@ -54,7 +55,7 @@ function isInputValue(value: unknown): value is string | string[] | undefined {
   );
 }
 
-export function EditProfileModal({ profile, onClose, onSave }: EditProfileModalProps) {
+export function EditProfileModal({ profile, onClose, onSave, enabledSections }: EditProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(() => ({
@@ -63,7 +64,7 @@ export function EditProfileModal({ profile, onClose, onSave }: EditProfileModalP
     bio: profile.bio || "",
     avatarUrl: profile.avatarUrl || "",
     sections: profile.sections
-      .filter(section => isProfileSectionType(section.type))
+      .filter(section => isProfileSectionType(section.type) && (!enabledSections || enabledSections.includes(section.type)))
       .map(section => ({
         ...section,
         type: section.type as ProfileSection["type"],
@@ -78,6 +79,10 @@ export function EditProfileModal({ profile, onClose, onSave }: EditProfileModalP
     trader: false,
     student: false,
   });
+
+  console.log('[EditProfileModal] enabledSections:', enabledSections);
+  const sectionTypes = (Object.keys(sectionMeta) as ProfileSection["type"][]).filter(type => !enabledSections || enabledSections.includes(type));
+  console.log('[EditProfileModal] sectionTypes to render:', sectionTypes);
 
   // Modal close logic
   useEffect(() => {
@@ -332,7 +337,7 @@ export function EditProfileModal({ profile, onClose, onSave }: EditProfileModalP
           {/* Optional Sections */}
           <div>
             <h3 className="text-xl font-bold mb-4">Optional Sections</h3>
-            {(["gamer", "creator", "developer", "trader", "student"] as ProfileSection["type"][]).map(type => (
+            {sectionTypes.map(type => (
               <div key={type}>{renderSection(type)}</div>
             ))}
           </div>

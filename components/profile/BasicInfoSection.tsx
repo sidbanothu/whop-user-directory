@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 
-export function BasicInfoSection() {
+export function BasicInfoSection({ username }: { username: string }) {
   const {
     register,
     formState: { errors },
@@ -15,18 +15,14 @@ export function BasicInfoSection() {
           <label htmlFor="username" className="block font-medium mb-1">Username</label>
           <input
             id="username"
-            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed opacity-60"
             placeholder="Username"
+            value={username}
             readOnly
-            {...register("username", {
-              required: "Username is required",
-              minLength: { value: 2, message: "Min 2 characters" },
-              maxLength: { value: 32, message: "Max 32 characters" },
-            })}
+            disabled
+            tabIndex={-1}
+            autoComplete="off"
           />
-          {errors.username && (
-            <p className="text-red-500 text-sm mt-1">{errors.username.message as string}</p>
-          )}
         </div>
         <div>
           <label htmlFor="name" className="block font-medium mb-1">Name</label>

@@ -13,7 +13,7 @@ export function LivePreview() {
   const previewProfile: Profile = {
     id: "preview",
     userId: "preview",
-    communityId: "preview",
+    experience_id: "preview",
     username: formValues.username || "username",
     name: formValues.name || "Your Name",
     bio: formValues.bio || "",

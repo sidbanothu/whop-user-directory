@@ -49,6 +49,7 @@
     "@whop-apps/dev-proxy": "0.0.1-canary.110",
     "dotenv-cli": "^8.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }

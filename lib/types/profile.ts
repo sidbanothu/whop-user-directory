@@ -7,7 +7,7 @@ export type ProfileSection = {
 export type Profile = {
   id: string;
   userId: string;
-  communityId: string;
+  experience_id: string;
   username: string;
   name: string;
   bio: string;

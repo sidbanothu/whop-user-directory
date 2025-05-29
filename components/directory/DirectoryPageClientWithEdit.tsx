@@ -28,6 +28,8 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
+  const [themeColor, setThemeColor] = useState<string | null>(null);
   const activeFilter = searchParams.get("tab") || "all";
 
   useEffect(() => {
@@ -44,6 +46,18 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
     fetchCurrentUserProfile();
   }, [userId, experienceId]);
 
+  useEffect(() => {
+    async function fetchEnabledSections() {
+      const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
+      const data = await res.json();
+      console.log('[DirectoryPageClientWithEdit] fetched enabledSections:', data.settings?.profileSections);
+      setEnabledSections(data.settings?.profileSections || []);
+      setThemeColor(data.settings?.color || null);
+      console.log('[DirectoryPageClientWithEdit] fetched themeColor:', data.settings?.color);
+    }
+    fetchEnabledSections();
+  }, [experienceId]);
+
   const canEdit = accessLevel === "admin" || accessLevel === "customer";
 
   // Filter bar handler
@@ -58,7 +72,10 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-indigo-400 via-purple-400 to-indigo-500 flex flex-col items-center py-0 px-0 relative">
+    <div
+      className={`min-h-screen w-full flex flex-col items-center py-0 px-0 relative ${themeColor ? '' : 'bg-gradient-to-br from-indigo-400 via-purple-400 to-indigo-500'}`}
+      style={themeColor ? { background: themeColor } : undefined}
+    >
       {/* Floating Edit Profile Button */}
       {canEdit && currentProfile && (
         <button
@@ -105,42 +122,48 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
         </Suspense>
       </main>
       {/* Edit Profile Modal */}
-      {showEditModal && currentProfile && (
-        <EditProfileModal
-          profile={currentProfile}
-          onClose={() => setShowEditModal(false)}
-          onSave={async (updatedProfile) => {
-            try {
-              const result = await updateProfile({
-                id: updatedProfile.id,
-                experienceId,
-                username: updatedProfile.username,
-                name: updatedProfile.name,
-                bio: updatedProfile.bio,
-                sections: updatedProfile.sections.map(section => ({
-                  type: section.type,
-                  data: section.data,
-                })),
-              });
-              if (!result.success) {
-                throw new Error(result.error || 'Failed to update profile');
-              }
-              setShowEditModal(false);
-              // Refetch the current profile
-              const res = await fetch(`/api/profile?userId=${userId}&experienceId=${experienceId}`);
-              const data = await res.json();
-              if (data && data.profile) {
-                setCurrentProfile(data.profile);
-                router.refresh();
-              } else {
-                throw new Error('Failed to refetch profile');
-              }
-            } catch (error) {
-              console.error("Failed to update profile:", error);
-              alert(error instanceof Error ? error.message : 'Failed to update profile');
-            }
-          }}
-        />
+      {showEditModal && currentProfile && enabledSections && (
+        (() => {
+          console.log('[DirectoryPageClientWithEdit] Rendering EditProfileModal with enabledSections:', enabledSections);
+          return (
+            <EditProfileModal
+              profile={currentProfile}
+              onClose={() => setShowEditModal(false)}
+              onSave={async (updatedProfile) => {
+                try {
+                  const result = await updateProfile({
+                    id: updatedProfile.id,
+                    experienceId,
+                    username: updatedProfile.username,
+                    name: updatedProfile.name,
+                    bio: updatedProfile.bio,
+                    sections: updatedProfile.sections.map(section => ({
+                      type: section.type,
+                      data: section.data,
+                    })),
+                  });
+                  if (!result.success) {
+                    throw new Error(result.error || 'Failed to update profile');
+                  }
+                  setShowEditModal(false);
+                  // Refetch the current profile
+                  const res = await fetch(`/api/profile?userId=${userId}&experienceId=${experienceId}`);
+                  const data = await res.json();
+                  if (data && data.profile) {
+                    setCurrentProfile(data.profile);
+                    router.refresh();
+                  } else {
+                    throw new Error('Failed to refetch profile');
+                  }
+                } catch (error) {
+                  console.error("Failed to update profile:", error);
+                  alert(error instanceof Error ? error.message : 'Failed to update profile');
+                }
+              }}
+              enabledSections={enabledSections}
+            />
+          );
+        })()
       )}
     </div>
   );
