@@ -56,6 +56,20 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       console.log('[DirectoryPageClientWithEdit] fetched themeColor:', data.settings?.color);
     }
     fetchEnabledSections();
+
+    // Fetch Introductions feed ID from API route and log it
+    fetch(`/api/whop-introductions-feed?experienceId=${experienceId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.feedId) {
+          console.log('[DirectoryPageClientWithEdit] Introductions feed ID from API:', data.feedId);
+        } else {
+          console.error('[DirectoryPageClientWithEdit] Error from API:', data.error);
+        }
+      })
+      .catch(err => {
+        console.error('[DirectoryPageClientWithEdit] Error fetching Introductions feed ID from API:', err);
+      });
   }, [experienceId]);
 
   const canEdit = accessLevel === "admin" || accessLevel === "customer";

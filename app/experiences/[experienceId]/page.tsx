@@ -1,3 +1,4 @@
+import { findIntroductionsExperienceId } from "@/lib/whop-chat-feed";
 import { whopApi } from "@/lib/whop-api";
 import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
@@ -10,6 +11,16 @@ export default async function ExperiencePage({ params }) {
   const headersList = await headers();
   const { experienceId } = await params;
   const { userId } = await verifyUserToken(headersList);
+
+  // Build headers for GraphQL
+  const gqlHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
+    "x-on-behalf-of": userId,
+  };
+
+  // Trigger the workflow and log the GraphQL requests/results
+  await findIntroductionsExperienceId(gqlHeaders, experienceId);
 
   const result = await whopApi.checkIfUserHasAccessToExperience({
     userId,
