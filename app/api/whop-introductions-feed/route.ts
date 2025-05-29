@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { findIntroductionsExperienceId } from "@/lib/whop-chat-feed";
+import { findIntroductionsChatFeedId } from "@/lib/whop-chat-feed";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
       "x-on-behalf-of": process.env.WHOP_AGENT_USER_ID,
     };
-    const feedId = await findIntroductionsExperienceId(headers, experienceId);
+    const feedId = await findIntroductionsChatFeedId(headers, experienceId);
     return Response.json({ feedId });
   } catch (err) {
     return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });

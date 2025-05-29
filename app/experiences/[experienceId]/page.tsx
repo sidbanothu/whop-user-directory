@@ -1,4 +1,4 @@
-import { findIntroductionsExperienceId } from "@/lib/whop-chat-feed";
+import { findIntroductionsChatFeedId } from "@/lib/whop-chat-feed";
 import { whopApi } from "@/lib/whop-api";
 import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
@@ -20,7 +20,7 @@ export default async function ExperiencePage({ params }) {
   };
 
   // Trigger the workflow and log the GraphQL requests/results
-  await findIntroductionsExperienceId(gqlHeaders, experienceId);
+  await findIntroductionsChatFeedId(gqlHeaders, experienceId);
 
   const result = await whopApi.checkIfUserHasAccessToExperience({
     userId,

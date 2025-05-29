@@ -4,7 +4,7 @@ import { Profile } from "@/lib/types/profile";
 
 
 
-export async function findIntroductionsExperienceId(headers: Record<string, string>, experienceId: string): Promise<string> {
+export async function findIntroductionsChatFeedId(headers: Record<string, string>, experienceId: string): Promise<string> {
   // Step 1: Fetch companyId from publicExperience
   const getCompanyQuery = {
     query: `
@@ -18,20 +18,20 @@ export async function findIntroductionsExperienceId(headers: Record<string, stri
     `,
     variables: { experienceId },
   };
-  console.log('[findIntroductionsExperienceId] Fetching companyId for experienceId:', experienceId);
+  console.log('[findIntroductionsChatFeedId] Fetching companyId for experienceId:', experienceId);
   const companyRes = await fetch("https://api.whop.com/public-graphql", {
     method: "POST",
     headers,
     body: JSON.stringify(getCompanyQuery),
   });
   const companyData = await companyRes.json();
-  console.log('[findIntroductionsExperienceId] publicExperience response:', JSON.stringify(companyData, null, 2));
+  console.log('[findIntroductionsChatFeedId] publicExperience response:', JSON.stringify(companyData, null, 2));
   const companyId = companyData.data?.publicExperience?.company?.id;
   if (!companyId) {
     throw new Error('Could not find companyId for experienceId: ' + experienceId);
   }
 
-  // Step 2: Fetch all access passes and experiences for the company
+  // Step 2: Fetch all access passes and experiences for the company, including chatFeedIds
   const getExperiencesQuery = {
     query: `
       query GetExperiences($companyId: ID!) {
@@ -43,6 +43,7 @@ export async function findIntroductionsExperienceId(headers: Record<string, stri
               experiences {
                 id
                 name
+                chatFeedIds
               }
             }
           }
@@ -51,25 +52,27 @@ export async function findIntroductionsExperienceId(headers: Record<string, stri
     `,
     variables: { companyId },
   };
-  console.log('[findIntroductionsExperienceId] Fetching all experiences for companyId:', companyId);
+  console.log('[findIntroductionsChatFeedId] Fetching all experiences for companyId:', companyId);
   const experiencesRes = await fetch("https://api.whop.com/public-graphql", {
     method: "POST",
     headers,
     body: JSON.stringify(getExperiencesQuery),
   });
   const experiencesData = await experiencesRes.json();
-  console.log('[findIntroductionsExperienceId] company accessPassesV2 response:', JSON.stringify(experiencesData, null, 2));
+  console.log('[findIntroductionsChatFeedId] company accessPassesV2 response:', JSON.stringify(experiencesData, null, 2));
   const passes = experiencesData.data?.company?.accessPassesV2?.nodes || [];
   for (const pass of passes) {
     for (const exp of pass.experiences || []) {
       if (exp.name && exp.name.toLowerCase() === 'introductions') {
-        console.log(`[findIntroductionsExperienceId] Found "Introductions" experienceId: ${exp.id}`);
-        return exp.id;
+        const chatFeedId = exp.chatFeedIds && exp.chatFeedIds[0];
+        if (chatFeedId) {
+          console.log(`[findIntroductionsChatFeedId] Found "Introductions" chatFeedId: ${chatFeedId}`);
+          return chatFeedId;
+        }
       }
     }
-
   }
-  throw new Error('No experience named "Introductions" found for this company.');
+  throw new Error('No experience named "Introductions" with a chat feed found for this company.');
 }
 
 export async function sendProfileAnnouncement(feedId: string, profile: Profile, headers: Record<string, string>) {

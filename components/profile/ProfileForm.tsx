@@ -8,7 +8,7 @@ import { LivePreview } from "./LivePreview";
 import { Profile } from "@/lib/types/profile";
 import { updateProfile } from "@/app/actions/profile";
 import { useState, useEffect } from "react";
-import { findIntroductionsExperienceId, sendProfileAnnouncement, sendChatMessage } from "@/lib/whop-chat-feed";
+import { sendProfileAnnouncement, sendChatMessage } from "@/lib/whop-chat-feed";
 
 interface ProfileFormData {
   username: string;
@@ -20,9 +20,11 @@ interface ProfileFormData {
 interface ProfileFormProps {
   initialData?: Profile;
   experienceId: string;
+  onClose?: () => void;
 }
 
-export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
+export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormProps) {
+  console.log('[ProfileForm] initialData:', initialData);
   console.log('[ProfileForm] Edit Profile module rendered');
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,41 +90,23 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
     }
   };
 
-  async function handleAnnounce() {
-    setIsAnnouncing(true);
-    setAnnounceResult(null);
-    try {
-      // You may need to pass headers from context or fetch them here
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
-        "x-on-behalf-of": initialData.userId,
-      };
-      const feedId = await findIntroductionsExperienceId(headers, experienceId);
-      await sendProfileAnnouncement(feedId, initialData, headers);
-      setAnnounceResult("Profile announced in Introductions chat!");
-    } catch (err) {
-      setAnnounceResult("Failed to announce profile: " + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setIsAnnouncing(false);
-    }
-  }
-
   async function handleSendMessage() {
     setIsSendingMessage(true);
     setSendMessageResult(null);
     try {
-      // Build headers for GraphQL
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
-        "x-on-behalf-of": initialData.userId,
-      };
-      // Find Introductions experience ID
-      const introductionsExperienceId = await findIntroductionsExperienceId(headers, experienceId);
-      // Format the profile card as a message
-      const message = `👋 Meet ${initialData.name} (@${initialData.username})\n${initialData.bio || ''}`;
-      await sendChatMessage(introductionsExperienceId, message, headers);
+      const res = await fetch("/api/send-profile-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: initialData.userId,
+          experienceId,
+          name: initialData.name,
+          username: initialData.username,
+          bio: initialData.bio,
+        }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
       setSendMessageResult("Profile sent to Introductions chat!");
     } catch (err) {
       setSendMessageResult("Failed to send message: " + (err instanceof Error ? err.message : String(err)));
@@ -146,22 +130,21 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
               {error}
             </div>
           )}
-          <div className="p-2 bg-yellow-100 text-yellow-800 text-center rounded">DEBUG: This is the ProfileForm with Announce button</div>
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 pt-6 border-t mt-8">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={onClose ? onClose : () => router.back()}
               className="px-6 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-all"
             >
               Cancel
             </button>
-            {/* <button
+            <button
               type="submit"
               disabled={isSubmitting}
               className="px-6 py-2 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-all disabled:opacity-60"
             >
               {isSubmitting ? "Saving..." : "Save Changes"}
-            </button> */}
+            </button>
             <button
               type="button"
               onClick={handleSendMessage}
@@ -171,9 +154,6 @@ export function ProfileForm({ initialData, experienceId }: ProfileFormProps) {
               {isSendingMessage ? "Sending..." : "Send Message"}
             </button>
           </div>
-          {announceResult && (
-            <div className="mt-2 text-sm text-center text-green-600">{announceResult}</div>
-          )}
           {sendMessageResult && (
             <div className="mt-2 text-sm text-center text-green-600">{sendMessageResult}</div>
           )}
