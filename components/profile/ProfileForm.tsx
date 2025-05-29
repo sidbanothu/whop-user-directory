@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BasicInfoSection } from "./BasicInfoSection";
 import { OptionalSections } from "./OptionalSections";
 import { LivePreview } from "./LivePreview";
-import { Profile } from "@/lib/types/profile";
+import { Profile, ProfileSection } from "@/lib/types/profile";
 import { updateProfile } from "@/app/actions/profile";
 import { useState, useEffect } from "react";
 import { sendProfileAnnouncement, sendChatMessage } from "@/lib/whop-chat-feed";
@@ -21,9 +21,10 @@ interface ProfileFormProps {
   initialData?: Profile;
   experienceId: string;
   onClose?: () => void;
+  onSave?: (updatedProfile: Profile) => Promise<void>;
 }
 
-export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormProps) {
+export function ProfileForm({ initialData, experienceId, onClose, onSave }: ProfileFormProps) {
   console.log('[ProfileForm] initialData:', initialData);
   console.log('[ProfileForm] Edit Profile module rendered');
   const router = useRouter();
@@ -65,23 +66,39 @@ export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormP
         throw new Error("Profile ID is required");
       }
 
-      const result = await updateProfile({
-        id: initialData.id,
-        experienceId,
-        username: initialData.username,
+      const updatedProfile: Profile = {
+        ...initialData,
         name: data.name,
         bio: data.bio,
         sections: Object.entries(data.sections).map(([type, data]) => ({
-          type,
+          type: type as ProfileSection['type'],
+          title: type.charAt(0).toUpperCase() + type.slice(1),
           data,
         })),
-      });
+      };
 
-      if (!result.success) {
-        throw new Error(result.error);
+      if (onSave) {
+        await onSave(updatedProfile);
+      } else {
+        const result = await updateProfile({
+          id: initialData.id,
+          experienceId,
+          username: initialData.username,
+          name: data.name,
+          bio: data.bio,
+          sections: Object.entries(data.sections).map(([type, data]) => ({
+            type: type as ProfileSection['type'],
+            title: type.charAt(0).toUpperCase() + type.slice(1),
+            data,
+          })),
+        });
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        router.push(`/experiences/${experienceId}`);
       }
-
-      router.push(`/experiences/${experienceId}`);
     } catch (error) {
       console.error("Error saving profile:", error);
       setError(error instanceof Error ? error.message : "Failed to save profile");

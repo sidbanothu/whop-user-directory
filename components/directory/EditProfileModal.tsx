@@ -6,6 +6,7 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 interface EditProfileModalProps {
   profile: Profile;
   onClose: () => void;
+  onSave: (updatedProfile: Profile) => Promise<void>;
   enabledSections?: string[];
 }
 
@@ -55,7 +56,7 @@ function isInputValue(value: unknown): value is string | string[] | undefined {
   );
 }
 
-export function EditProfileModal({ profile, onClose, enabledSections }: EditProfileModalProps) {
+export function EditProfileModal({ profile, onClose, onSave, enabledSections }: EditProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Modal close logic
@@ -81,7 +82,7 @@ export function EditProfileModal({ profile, onClose, enabledSections }: EditProf
         </div>
         {/* Modal Body */}
         <div className="p-8 space-y-8 overflow-y-auto">
-          <ProfileForm initialData={profile} experienceId={profile.experience_id} onClose={onClose} />
+          <ProfileForm initialData={profile} experienceId={profile.experience_id} onClose={onClose} onSave={onSave} />
         </div>
       </div>
     </div>
