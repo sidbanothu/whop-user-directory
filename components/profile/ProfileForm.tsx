@@ -94,7 +94,8 @@ export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormP
     setIsSendingMessage(true);
     setSendMessageResult(null);
     try {
-      const res = await fetch("/api/send-profile-message", {
+      console.log('[ProfileForm] Sending to chat...');
+      const chatRes = await fetch("/api/send-profile-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,11 +106,30 @@ export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormP
           bio: initialData.bio,
         }),
       });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error);
-      setSendMessageResult("Profile sent to Introductions chat!");
+      const chatResult = await chatRes.json();
+      console.log('[ProfileForm] Chat result:', chatResult);
+      if (!chatResult.success) throw new Error("Chat: " + chatResult.error);
+
+      console.log('[ProfileForm] Sending to forum...');
+      const forumRes = await fetch("/api/send-profile-forum-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: initialData.userId,
+          experienceId,
+          name: initialData.name,
+          username: initialData.username,
+          bio: initialData.bio,
+        }),
+      });
+      const forumResult = await forumRes.json();
+      console.log('[ProfileForm] Forum result:', forumResult);
+      if (!forumResult.success) throw new Error("Forum: " + forumResult.error);
+
+      setSendMessageResult("Profile sent to Introductions chat and forum!");
     } catch (err) {
-      setSendMessageResult("Failed to send message: " + (err instanceof Error ? err.message : String(err)));
+      setSendMessageResult("Failed to send: " + (err instanceof Error ? err.message : String(err)));
+      console.error('[ProfileForm] Send error:', err);
     } finally {
       setIsSendingMessage(false);
     }
@@ -151,7 +171,7 @@ export function ProfileForm({ initialData, experienceId, onClose }: ProfileFormP
               disabled={isSendingMessage}
               className="px-6 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-all disabled:opacity-60"
             >
-              {isSendingMessage ? "Sending..." : "Send Message"}
+              {isSendingMessage ? "Posting..." : "Send Message"}
             </button>
           </div>
           {sendMessageResult && (
