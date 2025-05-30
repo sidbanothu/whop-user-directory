@@ -49,7 +49,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 					// Try to send owner payout, but don't fail the webhook if it fails
 					try {
 						console.log(`[webhook] Fetching ledger account for companyId=${companyId}`);
-						const ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
+						const ledgerAccount = await whopApi.withUser(process.env.WHOP_AGENT_USER_ID).getCompanyLedgerAccount({ companyId });
 						console.log(`[webhook] Ledger account fetched:`, ledgerAccount);
 
 						if (!ledgerAccount?.company?.ledgerAccount?.id) {
@@ -72,29 +72,29 @@ export async function POST(request: NextRequest): Promise<Response> {
 							}
 						});
 						console.log("[webhook] Owner payout successful");
-					} catch (payoutError) {
-						console.error("[webhook] Owner payout failed:", payoutError);
-						// Don't throw - we want the webhook to succeed even if payout fails
+					} catch (error) {
+						console.error("[webhook] Error sending owner payout:", error);
+						return NextResponse.json({ 
+							received: true,
+							error: "Error sending owner payout"
+						});
 					}
-				} catch (dbError) {
-					console.error(`[webhook] DB update error for user_id=${userId}, experience_id=${experienceId}:`, dbError, dbError?.stack);
-					throw dbError; // Re-throw DB errors as they are critical
+				} catch (error) {
+					console.error("[webhook] Error processing payment:", error);
+					return NextResponse.json({ 
+						received: true,
+						error: "Error processing payment"
+					});
 				}
 			}
 		}
+
 		return NextResponse.json({ received: true });
 	} catch (error) {
-		console.error("Webhook error:", error, error?.stack);
-		return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+		console.error("[webhook] Error processing webhook:", error);
+		return NextResponse.json({ 
+			received: false,
+			error: "Error processing webhook"
+		});
 	}
-}
-
-async function potentiallyLongRunningHandler(
-	_user_id: string | null | undefined,
-	_amount: number,
-	_currency: string,
-	_amount_after_fees: number | null | undefined,
-) {
-	// This is a placeholder for a potentially long running operation
-	// In a real scenario, you might need to fetch user data, update a database, etc.
 }
