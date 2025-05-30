@@ -17,7 +17,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 		// Use action instead of type
 		if (event.action === "payment.succeeded") {
 			const userId = event.data.user_id;
-			const experienceId = "exp_BPJ7JY3qCu49aR"; // Hardcoded for now
+			const experienceId = "exp_BPJ7JY3qCu49aR"; // Hardcoded for now 
 			const companyId = event.data.company_id; // Get company ID from webhook data
 
 			console.log(`[webhook] payment.succeeded for userId=(${typeof userId}) ${userId}, experienceId=(${typeof experienceId}) ${experienceId}`);
