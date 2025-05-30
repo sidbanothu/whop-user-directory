@@ -1,40 +1,41 @@
 import { waitUntil } from "@vercel/functions";
 import { makeWebhookValidator } from "@whop/api";
 import type { NextRequest } from "next/server";
+import { whopApi } from "@/lib/whop-api";
+import { NextResponse } from "next/server";
 
 const validateWebhook = makeWebhookValidator({
 	webhookSecret: process.env.WHOP_WEBHOOK_SECRET ?? "fallback",
 });
 
 export async function POST(request: NextRequest): Promise<Response> {
-	// Validate the webhook to ensure it's from Whop
-	const webhookData = await validateWebhook(request);
-
-	// Handle the webhook event
-	if (webhookData.action === "payment.succeeded") {
-		const { id, final_amount, amount_after_fees, currency, user_id } =
-			webhookData.data;
-
-		// final_amount is the amount the user paid
-		// amount_after_fees is the amount that is received by you, after card fees and processing fees are taken out
-
-		console.log(
-			`Payment ${id} succeeded for ${user_id} with amount ${final_amount} ${currency}`,
-		);
-
-		// if you need to do work that takes a long time, use waitUntil to run it in the background
-		waitUntil(
-			potentiallyLongRunningHandler(
-				user_id,
-				final_amount,
-				currency,
-				amount_after_fees,
-			),
-		);
+	try {
+		const event = await request.json();
+		// Example: check for successful payment event and badge purchase
+		if (event.type === "payment.succeeded" && event.data?.metadata?.premium) {
+			const experienceId = event.data.metadata.experienceId;
+			if (experienceId) {
+				// 1. Get your company's ledger account
+				const experience = await whopApi.getExperience({ experienceId });
+				const companyId = experience.experience.company.id;
+				const ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
+				// 2. Transfer $0.50 to the owner (hardcoded user ID)
+				await whopApi.transferFunds({
+					input: {
+						amount: 50, // $0.50 in cents
+						currency: "usd",
+						destinationId: "user_htieokJ90kVys",
+						ledgerAccountId: ledgerAccount.company?.ledgerAccount.id!,
+						idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
+					}
+				});
+			}
+		}
+		return NextResponse.json({ received: true });
+	} catch (error) {
+		console.error("Webhook error:", error);
+		return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
 	}
-
-	// Make sure to return a 2xx status code quickly. Otherwise the webhook will be retried.
-	return new Response("OK", { status: 200 });
 }
 
 async function potentiallyLongRunningHandler(
