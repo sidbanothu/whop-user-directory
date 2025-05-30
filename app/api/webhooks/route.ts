@@ -16,10 +16,11 @@ export async function POST(request: NextRequest): Promise<Response> {
 
 		// Use action instead of type
 		if (event.action === "payment.succeeded") {
-			// Try to extract experienceId and userId from the event 
-			const experienceId = event.data.experience_id || event.data.metadata?.experienceId;
-			const userId = event.data.user_id || event.data.userId;
+			const userId = event.data.user_id;
+			const experienceId = "exp_BPJ7JY3qCu49aR"; // Hardcoded for now
+
 			console.log(`[webhook] payment.succeeded for userId=(${typeof userId}) ${userId}, experienceId=(${typeof experienceId}) ${experienceId}`);
+
 			if (experienceId && userId) {
 				try {
 					const existingProfiles = await prisma.profiles.findMany({
