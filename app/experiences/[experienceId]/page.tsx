@@ -4,8 +4,9 @@ import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
 import { DirectoryPageClientWithEdit } from "@/components/directory/DirectoryPageClientWithEdit";
 import Link from "next/link";
-import { findOrCreateProfile } from "@/lib/db";
+import { findOrCreateProfile, prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { CreateProfileButton } from "@/components/CreateProfileButton";
 
 export default async function ExperiencePage({ params }) {
   const headersList = await headers();
@@ -15,25 +16,13 @@ export default async function ExperiencePage({ params }) {
   // Get Whop user info
   const whopUser = (await whopApi.getUser({ userId })).publicUser;
 
-  // Find or create profile FIRST
-  const profile = await findOrCreateProfile({
-    userId,
-    experienceId,
-    defaultUsername: whopUser.username ?? "",
-    defaultName: whopUser.name ?? "",
-    defaultBio: whopUser.bio ?? "",
-    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
+  // Only fetch profile, do not create
+  const profile = await prisma.profiles.findFirst({
+    where: {
+      user_id: userId,
+      experience_id: experienceId,
+    },
   });
-
-//   // Build headers for GraphQL
-//   const gqlHeaders = {
-//     "Content-Type": "application/json",
-//     Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
-//     "x-on-behalf-of": userId,
-//   };
-
-//   // Now it's safe to do experience/feed lookups
-//   await findIntroductionsChatFeedId(gqlHeaders, experienceId);
 
   const result = await whopApi.checkIfUserHasAccessToExperience({
     userId,
@@ -45,6 +34,19 @@ export default async function ExperiencePage({ params }) {
   }
 
   const { accessLevel } = result.hasAccessToExperience;
+
+  // If profile does not exist, show create profile card
+  if (!profile) {
+    return (
+      <div>
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex flex-col items-center">
+          <h2 className="text-lg font-semibold mb-2 text-yellow-800">You don&apos;t have a profile yet!</h2>
+          <p className="mb-4 text-yellow-700">Create your profile to join the directory and connect with others.</p>
+          <CreateProfileButton experienceId={experienceId} />
+        </div>
+      </div>
+    );
+  }
 
   // If profile was just created (empty name/username), redirect to edit profile
   if (!profile.name && !profile.username) {
