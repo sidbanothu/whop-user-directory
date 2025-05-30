@@ -4,7 +4,7 @@ import { useState } from "react";
 // If you use the Whop iframe SDK, uncomment the next line:
 // import { useIframeSdk } from "@whop/sdk";
 
-export function PremiumBadgeButton({ userId, experienceId }: { userId: string, experienceId: string }) {
+export function PremiumBadgeButton({ userId, experienceId, label }: { userId: string, experienceId: string, label?: string }) {
   // Uncomment if using the iframe SDK:
   // const iframeSdk = useIframeSdk();
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,7 @@ export function PremiumBadgeButton({ userId, experienceId }: { userId: string, e
         disabled={loading}
         className="px-6 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition-all"
       >
-        {loading ? "Processing..." : "Get Premium Badge ($1)"}
+        {loading ? "Processing..." : (label || "Get Premium Badge ($1)")}
       </button>
       {error && <div className="text-red-600 mt-2">{error}</div>}
     </div>

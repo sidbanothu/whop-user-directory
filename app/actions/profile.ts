@@ -19,6 +19,15 @@ export async function updateProfile({
   sections: Array<{ type: string; data: Record<string, any> }>;
 }) {
   try {
+    console.log('[updateProfile] Starting profile update with data:', {
+      id,
+      experienceId,
+      username,
+      name,
+      bio,
+      sections
+    });
+
     const updatedProfile = await prisma.profiles.update({
       where: { id },
       data: {
@@ -30,13 +39,15 @@ export async function updateProfile({
       },
     });
 
+    console.log('[updateProfile] Successfully updated profile in database:', updatedProfile);
+
     // Revalidate the directory and profile pages
     revalidatePath(`/experiences/${experienceId}`);
     revalidatePath(`/experiences/${experienceId}/edit-profile`);
 
     return { success: true, profile: updatedProfile };
   } catch (error) {
-    console.error("Error updating profile:", error);
+    console.error("[updateProfile] Error updating profile:", error);
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }

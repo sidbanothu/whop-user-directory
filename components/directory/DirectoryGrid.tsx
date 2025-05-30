@@ -48,7 +48,7 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
 
   const handleSaveProfile = async (updatedProfile: Profile) => {
     try {
-      console.log('DirectoryGrid: Starting profile update...');
+      console.log('[DirectoryGrid] Starting profile update with data:', updatedProfile);
       const result = await updateProfile({
         id: updatedProfile.id,
         experienceId,
@@ -61,15 +61,18 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
         })),
       });
       
+      console.log('[DirectoryGrid] Update profile result:', result);
+      
       if (!result.success) {
         throw new Error(result.error || 'Failed to update profile');
       }
 
       setEditingProfile(null);
+      console.log('[DirectoryGrid] Profile updated successfully, refreshing data');
       // Force a refresh of the profiles data
       router.refresh();
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      console.error("[DirectoryGrid] Failed to update profile:", error);
       alert(error instanceof Error ? error.message : 'Failed to update profile');
     }
   };

@@ -12,7 +12,9 @@ export function KeyValuePairsInput({ value, onChange, keyPlaceholder, valuePlace
 
   const handleAdd = () => {
     if (keyInput.trim() && valueInput.trim() && Object.keys(value).length < max) {
-      onChange({ ...value, [keyInput.trim()]: valueInput.trim() });
+      const newVal = { ...value, [keyInput.trim()]: valueInput.trim() };
+      console.log('KeyValuePairsInput handleAdd:', newVal);
+      onChange(newVal);
       setKeyInput("");
       setValueInput("");
     }

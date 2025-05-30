@@ -8,14 +8,12 @@ export function BasicInfoSection({ username }: { username: string }) {
 
   return (
     <section className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">Basic Info</h2>
-      {/* TODO: Add form fields for username, name, bio, avatar */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
-          <label htmlFor="username" className="block font-medium mb-1">Username</label>
+          <label htmlFor="username" className="block font-semibold mb-1 text-gray-700">Username</label>
           <input
             id="username"
-            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed opacity-60"
+            className="w-full border rounded-lg px-4 py-2 bg-gray-100 cursor-not-allowed opacity-60 text-gray-500"
             placeholder="Username"
             value={username}
             readOnly
@@ -25,11 +23,11 @@ export function BasicInfoSection({ username }: { username: string }) {
           />
         </div>
         <div>
-          <label htmlFor="name" className="block font-medium mb-1">Name</label>
+          <label htmlFor="name" className="block font-semibold mb-1 text-gray-700">Display Name</label>
           <input
             id="name"
-            className="w-full border rounded px-3 py-2"
-            placeholder="Name"
+            className="w-full border rounded-lg px-4 py-2"
+            placeholder="Display Name"
             {...register("name", {
               required: "Name is required",
               minLength: { value: 2, message: "Min 2 characters" },
@@ -41,10 +39,10 @@ export function BasicInfoSection({ username }: { username: string }) {
           )}
         </div>
         <div>
-          <label htmlFor="bio" className="block font-medium mb-1">Bio</label>
+          <label htmlFor="bio" className="block font-semibold mb-1 text-gray-700">Bio</label>
           <textarea
             id="bio"
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded-lg px-4 py-2"
             placeholder="Bio"
             {...register("bio", {
               maxLength: { value: 256, message: "Max 256 characters" },
