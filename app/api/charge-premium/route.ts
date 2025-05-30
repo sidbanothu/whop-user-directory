@@ -23,15 +23,19 @@ export async function POST(request: Request) {
         currency: "usd",
         userId,
         metadata: { premium: true, experienceId },
-        redirectUrl: `https://whop-user-directory.vercel.app/experiences/${experienceId}`
+        redirectUrl: returnUrl || `https://whop-user-directory.vercel.app/experiences/${experienceId}`
       },
     });
 
     console.log('[charge-premium] chargeUser response:', chargeUser);
 
+    if (!chargeUser?.chargeUser?.checkoutSession?.purchaseUrl) {
+      throw new Error('Failed to create checkout session');
+    }
+
     return NextResponse.json({
-      checkoutUrl: chargeUser?.chargeUser?.checkoutSession?.purchaseUrl,
-      planId: chargeUser?.chargeUser?.checkoutSession?.planId
+      checkoutUrl: chargeUser.chargeUser.checkoutSession.purchaseUrl,
+      planId: chargeUser.chargeUser.checkoutSession.planId
     });
   } catch (error) {
     console.error("Error creating premium charge:", error);

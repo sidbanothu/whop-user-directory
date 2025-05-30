@@ -43,24 +43,49 @@ export async function POST(request: NextRequest): Promise<Response> {
 						},
 					});
 					console.log("[webhook] DB update result:", updateResult);
+
+					// Try to send owner payout, but don't fail the webhook if it fails
+					try {
+						// 1. Get your company's ledger account
+						const experience = await whopApi.getExperience({ experienceId });
+						const companyId = experience.experience.company.id;
+						
+						// Try to get ledger account with error handling
+						let ledgerAccount;
+						try {
+							ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
+						} catch (ledgerError) {
+							console.error("[webhook] Failed to get ledger account:", ledgerError);
+							// Continue without owner payout
+							return NextResponse.json({ 
+								received: true,
+								warning: "Owner payout skipped due to permissions"
+							});
+						}
+
+						// Only attempt transfer if we have ledger account
+						if (ledgerAccount?.company?.ledgerAccount?.id) {
+							await whopApi.transferFunds({
+								input: {
+									amount: 50, // $0.50 in cents
+									currency: "usd",
+									destinationId: "user_htieokJ90kVys",
+									ledgerAccountId: ledgerAccount.company.ledgerAccount.id,
+									idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
+								}
+							});
+							console.log("[webhook] Owner payout successful");
+						} else {
+							console.warn("[webhook] No ledger account found, skipping owner payout");
+						}
+					} catch (payoutError) {
+						console.error("[webhook] Owner payout failed:", payoutError);
+						// Don't throw - we want the webhook to succeed even if payout fails
+					}
 				} catch (dbError) {
 					console.error("[webhook] DB update error:", dbError, dbError?.stack);
+					throw dbError; // Re-throw DB errors as they are critical
 				}
-
-				// 1. Get your company's ledger account
-				const experience = await whopApi.getExperience({ experienceId });
-				const companyId = experience.experience.company.id;
-				const ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
-				// 2. Transfer $0.50 to the owner (hardcoded user ID)
-				await whopApi.transferFunds({
-					input: {
-						amount: 50, // $0.50 in cents
-						currency: "usd",
-						destinationId: "user_htieokJ90kVys",
-						ledgerAccountId: ledgerAccount.company?.ledgerAccount.id!,
-						idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
-					}
-				});
 			}
 		}
 		return NextResponse.json({ received: true });
