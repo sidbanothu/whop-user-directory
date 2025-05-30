@@ -99,7 +99,7 @@ export function ProfileCard({ profile, onEdit, isEditable = false, enabledSectio
       }
     });
   });
-  // Limit to 4 links for layout, show '+N more' if needed
+  // Limit to 4 links for layout, show '+N more' if needed. 
   const MAX_LINKS = 4;
   const visibleLinks = socialLinks.slice(0, MAX_LINKS);
   const extraLinksCount = socialLinks.length - MAX_LINKS;
