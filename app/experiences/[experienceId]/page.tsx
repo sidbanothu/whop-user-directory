@@ -25,15 +25,15 @@ export default async function ExperiencePage({ params }) {
     defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
   });
 
-  // Build headers for GraphQL
-  const gqlHeaders = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
-    "x-on-behalf-of": userId,
-  };
+//   // Build headers for GraphQL
+//   const gqlHeaders = {
+//     "Content-Type": "application/json",
+//     Authorization: `Bearer ${process.env.WHOP_API_KEY}`,
+//     "x-on-behalf-of": userId,
+//   };
 
-  // Now it's safe to do experience/feed lookups
-  await findIntroductionsChatFeedId(gqlHeaders, experienceId);
+//   // Now it's safe to do experience/feed lookups
+//   await findIntroductionsChatFeedId(gqlHeaders, experienceId);
 
   const result = await whopApi.checkIfUserHasAccessToExperience({
     userId,
