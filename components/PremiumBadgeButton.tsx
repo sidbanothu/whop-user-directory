@@ -14,9 +14,16 @@ export function PremiumBadgeButton({ userId, experienceId, label }: { userId: st
     setLoading(true);
     setError(null);
     try {
+      // Get the current URL to return to after payment
+      const returnUrl = window.location.href;
+      
       const response = await fetch("/api/charge-premium", {
         method: "POST",
-        body: JSON.stringify({ userId, experienceId }),
+        body: JSON.stringify({ 
+          userId, 
+          experienceId,
+          returnUrl 
+        }),
         headers: { "Content-Type": "application/json" }
       });
       const data = await response.json();

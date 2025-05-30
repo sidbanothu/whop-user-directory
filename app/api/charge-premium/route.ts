@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, experienceId } = body;
+    const { userId, experienceId, returnUrl } = body;
     console.log('[charge-premium] Incoming request:', body);
 
     if (!userId) {
@@ -16,14 +16,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing experienceId" }, { status: 400 });
     }
 
-    // Create the $1 charge
+    // Create the $1 charge with return URL
     const chargeUser = await whopApi.chargeUser({
       input: {
         amount: 1, // $1
         currency: "usd",
         userId,
         metadata: { premium: true, experienceId },
-        redirectUrl: `https://whop.com/experiences/${experienceId}`
+        redirectUrl: returnUrl || `https://whop.com/experiences/${experienceId}`
       },
     });
 

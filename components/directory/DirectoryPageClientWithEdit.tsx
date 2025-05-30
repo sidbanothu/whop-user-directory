@@ -125,7 +125,7 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
           </div>
           <div className="flex-1 flex flex-col items-center">
             <h1 className={`page-title text-4xl font-extrabold ${theme.text} text-center`}>Community Hub</h1>
-            <p className="page-subtitle text-lg text-slate-500 text-center max-w-2xl">Connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
+            <p className={`page-subtitle text-lg ${theme.text} text-center max-w-2xl`}>Connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
           </div>
           <div>
             <button
