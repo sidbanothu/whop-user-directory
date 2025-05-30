@@ -18,20 +18,22 @@ export async function POST(request: NextRequest): Promise<Response> {
 		if (event.action === "payment.succeeded") {
 			const userId = event.data.user_id;
 			const experienceId = "exp_BPJ7JY3qCu49aR"; // Hardcoded for now
+			const companyId = event.data.company_id; // Get company ID from webhook data
 
 			console.log(`[webhook] payment.succeeded for userId=(${typeof userId}) ${userId}, experienceId=(${typeof experienceId}) ${experienceId}`);
 
 			if (experienceId && userId) {
 				try {
+					console.log(`[webhook] Looking up profiles for user_id=${userId}, experience_id=${experienceId}`);
 					const existingProfiles = await prisma.profiles.findMany({
 						where: {
 							user_id: userId,
 							experience_id: experienceId,
 						},
 					});
-					console.log(`[webhook] Found ${existingProfiles.length} profile(s) before update for user_id=${userId}, experience_id=${experienceId}`);
+					console.log(`[webhook] Found ${existingProfiles.length} profile(s):`, existingProfiles);
 
-					console.log("[webhook] Attempting DB update for profile");
+					console.log(`[webhook] Attempting DB update for user_id=${userId}, experience_id=${experienceId}`);
 					const updateResult = await prisma.profiles.updateMany({
 						where: {
 							user_id: userId,
@@ -42,48 +44,40 @@ export async function POST(request: NextRequest): Promise<Response> {
 							updated_at: new Date(),
 						},
 					});
-					console.log("[webhook] DB update result:", updateResult);
+					console.log(`[webhook] DB update result:`, updateResult);
 
 					// Try to send owner payout, but don't fail the webhook if it fails
 					try {
-						// 1. Get your company's ledger account
-						const experience = await whopApi.getExperience({ experienceId });
-						const companyId = experience.experience.company.id;
-						
-						// Try to get ledger account with error handling
-						let ledgerAccount;
-						try {
-							ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
-						} catch (ledgerError) {
-							console.error("[webhook] Failed to get ledger account:", ledgerError);
-							// Continue without owner payout
+						console.log(`[webhook] Fetching ledger account for companyId=${companyId}`);
+						const ledgerAccount = await whopApi.getCompanyLedgerAccount({ companyId });
+						console.log(`[webhook] Ledger account fetched:`, ledgerAccount);
+
+						if (!ledgerAccount?.company?.ledgerAccount?.id) {
+							console.warn("[webhook] No ledger account found, skipping owner payout");
 							return NextResponse.json({ 
 								received: true,
-								warning: "Owner payout skipped due to permissions"
+								warning: "Owner payout skipped - no ledger account found"
 							});
 						}
 
-						// Only attempt transfer if we have ledger account
-						if (ledgerAccount?.company?.ledgerAccount?.id) {
-							await whopApi.transferFunds({
-								input: {
-									amount: 50, // $0.50 in cents
-									currency: "usd",
-									destinationId: "user_htieokJ90kVys",
-									ledgerAccountId: ledgerAccount.company.ledgerAccount.id,
-									idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
-								}
-							});
-							console.log("[webhook] Owner payout successful");
-						} else {
-							console.warn("[webhook] No ledger account found, skipping owner payout");
-						}
+						// Transfer $0.50 to Sidbanothu
+						console.log(`[webhook] Initiating transferFunds: amount=50, currency=usd, destinationId=sidbanothu, ledgerAccountId=${ledgerAccount.company.ledgerAccount.id}`);
+						await whopApi.transferFunds({
+							input: {
+								amount: 50, // $0.50 in cents
+								currency: "usd",
+								destinationId: "sidbanothu", // Username to send to
+								ledgerAccountId: ledgerAccount.company.ledgerAccount.id,
+								idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
+							}
+						});
+						console.log("[webhook] Owner payout successful");
 					} catch (payoutError) {
 						console.error("[webhook] Owner payout failed:", payoutError);
 						// Don't throw - we want the webhook to succeed even if payout fails
 					}
 				} catch (dbError) {
-					console.error("[webhook] DB update error:", dbError, dbError?.stack);
+					console.error(`[webhook] DB update error for user_id=${userId}, experience_id=${experienceId}:`, dbError, dbError?.stack);
 					throw dbError; // Re-throw DB errors as they are critical
 				}
 			}

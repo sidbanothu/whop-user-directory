@@ -1,6 +1,14 @@
 import { whopApi } from "@/lib/whop-api";
 import { NextResponse } from "next/server";
 
+// Get base URL based on environment
+const getBaseUrl = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://whop-user-directory.vercel.app';
+};
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -23,7 +31,7 @@ export async function POST(request: Request) {
         currency: "usd",
         userId,
         metadata: { premium: true, experienceId },
-        redirectUrl: returnUrl || `https://whop-user-directory.vercel.app/experiences/${experienceId}`
+        redirectUrl: returnUrl || `${getBaseUrl()}/experiences/${experienceId}`
       },
     });
 
