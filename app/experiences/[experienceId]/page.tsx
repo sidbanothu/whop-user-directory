@@ -12,6 +12,19 @@ export default async function ExperiencePage({ params }) {
   const { experienceId } = await params;
   const { userId } = await verifyUserToken(headersList);
 
+  // Get Whop user info
+  const whopUser = (await whopApi.getUser({ userId })).publicUser;
+
+  // Find or create profile FIRST
+  const profile = await findOrCreateProfile({
+    userId,
+    experienceId,
+    defaultUsername: whopUser.username ?? "",
+    defaultName: whopUser.name ?? "",
+    defaultBio: whopUser.bio ?? "",
+    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
+  });
+
   // Build headers for GraphQL
   const gqlHeaders = {
     "Content-Type": "application/json",
@@ -19,7 +32,7 @@ export default async function ExperiencePage({ params }) {
     "x-on-behalf-of": userId,
   };
 
-  // Trigger the workflow and log the GraphQL requests/results
+  // Now it's safe to do experience/feed lookups
   await findIntroductionsChatFeedId(gqlHeaders, experienceId);
 
   const result = await whopApi.checkIfUserHasAccessToExperience({
@@ -32,19 +45,6 @@ export default async function ExperiencePage({ params }) {
   }
 
   const { accessLevel } = result.hasAccessToExperience;
-
-  // Get Whop user info
-  const whopUser = (await whopApi.getUser({ userId })).publicUser;
-
-  // Find or create profile
-  const profile = await findOrCreateProfile({
-    userId,
-    experienceId,
-    defaultUsername: whopUser.username ?? "",
-    defaultName: whopUser.name ?? "",
-    defaultBio: whopUser.bio ?? "",
-    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
-  });
 
   // If profile was just created (empty name/username), redirect to edit profile
   if (!profile.name && !profile.username) {
