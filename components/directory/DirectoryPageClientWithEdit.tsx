@@ -7,6 +7,7 @@ import { EditProfileModal } from "./EditProfileModal";
 import { Profile } from "@/lib/types/profile";
 import { updateProfile } from "@/app/actions/profile";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AdminSettingsModal } from "@/components/admin/admin-settings";
 
 interface DirectoryPageClientWithEditProps {
   experienceId: string;
@@ -30,6 +31,8 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
   const [loading, setLoading] = useState(true);
   const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
   const [themeColor, setThemeColor] = useState<string | null>(null);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminSettings, setAdminSettings] = useState<{ color?: string; profileSections?: string[] }>({});
   const activeFilter = searchParams.get("tab") || "all";
 
   useEffect(() => {
@@ -70,6 +73,13 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       });
   }, [experienceId]);
 
+  // Fetch admin settings for modal
+  const fetchAdminSettings = async () => {
+    const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
+    const data = await res.json();
+    setAdminSettings(data.settings || {});
+  };
+
   const canEdit = accessLevel === "admin" || accessLevel === "customer";
 
   // Filter bar handler
@@ -100,7 +110,21 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       )}
       {/* Header */}
       <header className="w-full flex flex-col items-center justify-center pt-16 pb-8">
-        <h1 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">Community Hub</h1>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <h1 className="text-5xl font-extrabold text-white drop-shadow-lg text-center">Community Hub</h1>
+          {accessLevel === "admin" && (
+            <button
+              className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white text-indigo-600 shadow transition"
+              title="Admin Settings"
+              onClick={async () => { await fetchAdminSettings(); setShowAdminModal(true); }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09c.7 0 1.32-.4 1.51-1a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h.09c.7 0 1.32-.4 1.51-1V3a2 2 0 014 0v.09c0 .7.4 1.32 1 1.51a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.09c0 .7.4 1.32 1 1.51H21a2 2 0 010 4h-.09c-.7 0-1.32.4-1.51 1z" />
+              </svg>
+            </button>
+          )}
+        </div>
         <p className="text-lg text-white/90 mb-8 text-center max-w-2xl">Discover and connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
         <div className="w-full max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center w-full gap-3">
@@ -176,6 +200,13 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
           );
         })()
       )}
+      {/* Admin Settings Modal */}
+      <AdminSettingsModal
+        open={showAdminModal}
+        onClose={() => setShowAdminModal(false)}
+        experienceId={experienceId}
+        currentSettings={adminSettings}
+      />
     </div>
   );
 } 

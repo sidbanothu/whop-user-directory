@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import React from 'react';
 
 const PROFILE_SECTION_OPTIONS = [
   "gamer",
@@ -92,6 +93,20 @@ export function AdminSettings({ experienceId, currentSettings }: AdminSettingsPr
         {saving ? "Saving..." : "Save Settings"}
       </button>
       {message && <div className="mt-4 text-center text-red-600">{message}</div>}
+    </div>
+  );
+}
+
+export function AdminSettingsModal({ open, onClose, experienceId, currentSettings }: { open: boolean, onClose: () => void, experienceId: string, currentSettings: { color?: string; profileSections?: string[] } }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div className="w-[90vw] max-w-lg max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-0 relative">
+        <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center hover:bg-gray-200 transition-colors text-2xl font-bold z-10" onClick={onClose}>&times;</button>
+        <div className="p-8">
+          <AdminSettings experienceId={experienceId} currentSettings={currentSettings} />
+        </div>
+      </div>
     </div>
   );
 } 

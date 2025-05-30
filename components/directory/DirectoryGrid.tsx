@@ -22,6 +22,7 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
   const { profiles, isLoading, error } = useProfiles(experienceId);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
+  const searchQuery = searchParams.get("q")?.toLowerCase() || "";
 
   useEffect(() => {
     async function fetchEnabledSections() {
@@ -38,9 +39,20 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
   }
 
   // Filter by section type if tab is set and not 'all'
-  const filteredProfiles = tab && tab !== "all"
+  let filteredProfiles = tab && tab !== "all"
     ? profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1) && enabledSections.includes(s.type)))
     : profiles;
+
+  // Apply search filter (name, username, bio only)
+  if (searchQuery) {
+    filteredProfiles = filteredProfiles.filter(profile => {
+      return (
+        (profile.name && profile.name.toLowerCase().includes(searchQuery)) ||
+        (profile.username && profile.username.toLowerCase().includes(searchQuery)) ||
+        (profile.bio && profile.bio.toLowerCase().includes(searchQuery))
+      );
+    });
+  }
 
   const handleEditProfile = (profile: Profile) => {
     setEditingProfile(profile);
