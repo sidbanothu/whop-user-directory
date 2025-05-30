@@ -16,14 +16,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing experienceId" }, { status: 400 });
     }
 
-    // Create the $1 charge with return URL
+    // Create the $1 charge with correct redirect URL
     const chargeUser = await whopApi.chargeUser({
       input: {
         amount: 1, // $1
         currency: "usd",
         userId,
         metadata: { premium: true, experienceId },
-        redirectUrl: returnUrl || `https://whop.com/experiences/${experienceId}`
+        redirectUrl: `https://whop-user-directory.vercel.app/experiences/${experienceId}`
       },
     });
 
