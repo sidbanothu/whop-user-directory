@@ -115,13 +115,15 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       <header className="w-full flex flex-col items-center justify-center pt-10 pb-6">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto mb-4 px-2">
           <div>
-            <button
-              className={`directory-action-btn border-2 border-gray-200 ${theme.buttonText} ${theme.buttonBg} px-5 py-2.5 rounded-xl font-semibold text-base flex items-center gap-2 shadow-sm ${theme.buttonHoverBg} transition`}
-              style={{ minWidth: 120 }}
-              onClick={async () => { await fetchAdminSettings(); setShowAdminModal(true); }}
-            >
-              <span role="img" aria-label="settings">⚙️</span> Admin Settings
-            </button>
+            {accessLevel === "admin" && (
+              <button
+                className={`directory-action-btn border-2 border-gray-200 ${theme.buttonText} ${theme.buttonBg} px-5 py-2.5 rounded-xl font-semibold text-base flex items-center gap-2 shadow-sm ${theme.buttonHoverBg} transition`}
+                style={{ minWidth: 120 }}
+                onClick={async () => { await fetchAdminSettings(); setShowAdminModal(true); }}
+              >
+                <span role="img" aria-label="settings">⚙️</span> Admin Settings
+              </button>
+            )}
           </div>
           <div className="flex-1 flex flex-col items-center">
             <h1 className={`page-title text-4xl font-extrabold ${theme.text} text-center`}>Community Hub</h1>
@@ -202,7 +204,7 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
         />
       )}
       {/* Admin Settings Modal */}
-      {showAdminModal && (
+      {accessLevel === "admin" && showAdminModal && (
         <AdminSettingsModal
           open={showAdminModal}
           experienceId={experienceId}
