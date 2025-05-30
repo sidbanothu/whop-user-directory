@@ -6,6 +6,7 @@ interface ProfileModalProps {
   profile: Profile;
   onClose: () => void;
   enabledSections?: string[];
+  theme: any;
 }
 
 const sectionIcons: Record<string, string> = {
@@ -24,7 +25,7 @@ const sectionTitles: Record<string, string> = {
   student: "Academic Profile",
 };
 
-export function ProfileModal({ profile, onClose, enabledSections }: ProfileModalProps) {
+export function ProfileModal({ profile, onClose, enabledSections, theme }: ProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   console.log('[ProfileModal] enabledSections:', enabledSections);
@@ -51,7 +52,7 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
   const TagList = ({ items }: { items: string[] }) => (
     <div className="flex flex-wrap gap-2 mt-1">
       {items.map((item, i) => (
-        <span key={i} className="bg-gradient-to-br from-indigo-400 to-purple-400 text-white px-3 py-1 rounded-full text-xs font-medium">
+        <span key={i} className={`px-3 py-1 rounded-full text-xs font-medium ${theme.modalHeaderGradient} ${theme.textOnGradient}`}>
           {item}
         </span>
       ))}
@@ -60,14 +61,14 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
 
   // Helper to render info cards (for handles, links, projects, achievements)
   const InfoCard = ({ icon, label, value, href }: { icon: string; label: string; value: string; href?: string }) => (
-    <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3 mb-2">
-      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 text-white font-bold text-lg">{icon}</div>
+    <div className={`flex items-center gap-3 rounded-lg px-4 py-3 mb-2`} style={{ background: theme.surface }}>
+      <div className={`w-8 h-8 flex items-center justify-center rounded-full ${theme.modalHeaderGradient} ${theme.textOnGradient} font-bold text-lg`}>{icon}</div>
       <div className="flex-1">
-        <div className="font-semibold text-sm">{label}</div>
+        <div className="font-semibold text-sm" style={{ color: theme.text }}>{label}</div>
         {href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:underline break-all">{value}</a>
+          <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs underline break-all" style={{ color: theme.text }}>{value}</a>
         ) : (
-          <div className="text-xs text-gray-700 break-all">{value}</div>
+          <div className="text-xs break-all" style={{ color: theme.text }}>{value}</div>
         )}
       </div>
     </div>
@@ -75,10 +76,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
 
   // Section renderers
   const renderGamer = (section: ProfileSection) => (
-    <div className="section bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className={`section rounded-2xl p-6 mb-6 shadow-sm`} style={{ background: theme.surface }}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{sectionIcons.gamer}</span>
-        <span className="text-lg font-bold">Gaming Profile</span>
+        <span className="text-lg font-bold" style={{ color: theme.text }}>Gaming Profile</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {section.data.games && Array.isArray(section.data.games) && (
@@ -106,10 +107,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
   );
 
   const renderCreator = (section: ProfileSection) => (
-    <div className="section bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className={`section rounded-2xl p-6 mb-6 shadow-sm`} style={{ background: theme.surface }}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{sectionIcons.creator}</span>
-        <span className="text-lg font-bold">Creator Profile</span>
+        <span className="text-lg font-bold" style={{ color: theme.text }}>Creator Profile</span>
       </div>
       {section.data.mediums && Array.isArray(section.data.mediums) && (
         <div>
@@ -129,10 +130,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
   );
 
   const renderDeveloper = (section: ProfileSection) => (
-    <div className="section bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className={`section rounded-2xl p-6 mb-6 shadow-sm`} style={{ background: theme.surface }}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{sectionIcons.developer}</span>
-        <span className="text-lg font-bold">Developer Profile</span>
+        <span className="text-lg font-bold" style={{ color: theme.text }}>Developer Profile</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {section.data.languages && Array.isArray(section.data.languages) && (
@@ -160,10 +161,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
   );
 
   const renderTrader = (section: ProfileSection) => (
-    <div className="section bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className={`section rounded-2xl p-6 mb-6 shadow-sm`} style={{ background: theme.surface }}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{sectionIcons.trader}</span>
-        <span className="text-lg font-bold">Trading Profile</span>
+        <span className="text-lg font-bold" style={{ color: theme.text }}>Trading Profile</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {section.data.assets && Array.isArray(section.data.assets) && (
@@ -183,10 +184,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
   );
 
   const renderStudent = (section: ProfileSection) => (
-    <div className="section bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className={`section rounded-2xl p-6 mb-6 shadow-sm`} style={{ background: theme.surface }}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{sectionIcons.student}</span>
-        <span className="text-lg font-bold">Academic Profile</span>
+        <span className="text-lg font-bold" style={{ color: theme.text }}>Academic Profile</span>
       </div>
       {section.data.subjects && Array.isArray(section.data.subjects) && (
         <div>
@@ -219,10 +220,10 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleBackdropClick}>
-      <div className="w-[95%] max-w-3xl max-h-[95vh] overflow-y-auto bg-transparent rounded-2xl shadow-2xl">
+      <div className="w-[95%] max-w-3xl max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl bg-white">
         {/* Modal Header (gradient background) */}
-        <div className="bg-gradient-to-r from-indigo-400 to-purple-400 p-8 rounded-t-2xl relative">
-          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors text-2xl font-bold" onClick={onClose}>&times;</button>
+        <div className={`${theme.modalHeaderGradient} p-8 rounded-t-2xl relative`}>
+          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors text-2xl font-bold" style={{ color: theme.textOnGradient }} onClick={onClose}>&times;</button>
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 rounded-full bg-white/30 flex items-center justify-center shadow-lg">
               {profile.avatarUrl && profile.avatarUrl.trim() !== "" ? (
@@ -236,11 +237,11 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <span className="text-3xl font-bold text-white">{profile.name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "U"}</span>
+                <span className={`text-3xl font-bold ${theme.textOnGradient}`}>{profile.name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "U"}</span>
               )}
             </div>
-            <div className="text-white">
-              <h2 className="text-3xl font-bold mb-1 flex items-center gap-3">
+            <div className={theme.textOnGradient}>
+              <h2 className={`text-3xl font-bold mb-1 flex items-center gap-3 ${theme.textOnGradient}`}>
                 {profile.name}
                 {profile.is_premium_member ? (
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400 text-white font-semibold text-base shadow">
@@ -258,7 +259,7 @@ export function ProfileModal({ profile, onClose, enabledSections }: ProfileModal
           </div>
         </div>
         {/* Modal Body (sections) */}
-        <div className="p-8 bg-gray-50 rounded-b-2xl">
+        <div className="p-8 rounded-b-2xl bg-white">
           {filteredSections.length > 0 ? (
             filteredSections.map((section, idx) => (
               <React.Fragment key={idx}>{renderSection(section)}</React.Fragment>

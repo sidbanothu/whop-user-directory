@@ -9,6 +9,7 @@ interface EditProfileModalProps {
   onClose: () => void;
   onSave: (updatedProfile: Profile) => Promise<void>;
   enabledSections?: string[];
+  theme: any;
 }
 
 const sectionMeta = {
@@ -57,7 +58,7 @@ function isInputValue(value: unknown): value is string | string[] | undefined {
   );
 }
 
-export function EditProfileModal({ profile, onClose, onSave, enabledSections }: EditProfileModalProps) {
+export function EditProfileModal({ profile, onClose, onSave, enabledSections, theme }: EditProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Modal close logic
@@ -74,12 +75,12 @@ export function EditProfileModal({ profile, onClose, onSave, enabledSections }: 
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleBackdropClick}>
-      <div className="w-[90vw] max-w-4xl max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-0" onClick={e => e.stopPropagation()}>
+      <div className="w-[90vw] max-w-4xl max-h-[95vh] overflow-y-auto rounded-3xl shadow-2xl p-0 bg-white" onClick={e => e.stopPropagation()}>
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-indigo-400 to-purple-400 p-8 rounded-t-3xl relative">
-          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors text-2xl font-bold" onClick={onClose}>&times;</button>
-          <h2 className="text-3xl font-bold text-white mb-1">Edit Your Profile</h2>
-          <div className="text-white text-base opacity-80 mb-4">Manage your profile and connect with community members</div>
+        <div className={`${theme.modalHeaderGradient} p-8 rounded-t-3xl relative`}>
+          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors text-2xl font-bold" style={{ color: theme.textOnGradient }} onClick={onClose}>&times;</button>
+          <h2 className={`text-3xl font-bold mb-1 ${theme.textOnGradient}`}>Edit Your Profile</h2>
+          <div className={`${theme.textOnGradient} text-base opacity-80 mb-4`}>Manage your profile and connect with community members</div>
           {/* Premium Status */}
           <div className="flex items-center gap-4 mb-2">
             {profile.is_premium_member ? null : (
@@ -88,7 +89,7 @@ export function EditProfileModal({ profile, onClose, onSave, enabledSections }: 
           </div>
         </div>
         {/* Modal Body - no preview, more spacious */}
-        <div className="p-10 space-y-10 overflow-y-auto bg-[#f7f8fa] rounded-b-3xl min-h-[60vh]">
+        <div className={`p-10 space-y-10 overflow-y-auto rounded-b-3xl min-h-[60vh] bg-white`}>
           <ProfileForm initialData={profile} experienceId={profile.experience_id} onClose={onClose} onSave={onSave} />
         </div>
       </div>

@@ -29,6 +29,7 @@
     "@whop/api": "^0.0.21-canary.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.511.0",
     "next": "15.3.2",
     "node-fetch": "^2.7.0",

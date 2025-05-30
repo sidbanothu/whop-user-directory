@@ -8,6 +8,7 @@ import { Profile } from "@/lib/types/profile";
 import { updateProfile } from "@/app/actions/profile";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminSettingsModal } from "@/components/admin/admin-settings";
+import { COLOR_THEMES } from "@/components/admin/admin-settings";
 
 interface DirectoryPageClientWithEditProps {
   experienceId: string;
@@ -17,10 +18,12 @@ interface DirectoryPageClientWithEditProps {
 
 const FILTERS = [
   { key: "all", label: "All" },
-  { key: "developers", label: "Developers" },
+  { key: "gamers", label: "Gamers" },
   { key: "creators", label: "Creators" },
+  { key: "developers", label: "Developers" },
   { key: "traders", label: "Traders" },
   { key: "students", label: "Students" },
+  { key: "verified", label: "Verified" },
 ];
 
 export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel }: DirectoryPageClientWithEditProps) {
@@ -30,7 +33,7 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
-  const [themeColor, setThemeColor] = useState<string | null>(null);
+  const [theme, setTheme] = useState(COLOR_THEMES[0]);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminSettings, setAdminSettings] = useState<{ color?: string; profileSections?: string[] }>({});
   const activeFilter = searchParams.get("tab") || "all";
@@ -54,7 +57,8 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
       const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
       const data = await res.json();
       setEnabledSections(data.settings?.profileSections || []);
-      setThemeColor(data.settings?.color || null);
+      const foundTheme = COLOR_THEMES.find(t => t.color === data.settings?.color) || COLOR_THEMES[0];
+      setTheme(foundTheme);
     }
     fetchEnabledSections();
 
@@ -80,6 +84,15 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
     setAdminSettings(data.settings || {});
   };
 
+  // Fix: define fetchEnabledSections for use after admin modal closes
+  const fetchEnabledSections = async () => {
+    const res = await fetch(`/api/experience/settings?experienceId=${experienceId}`);
+    const data = await res.json();
+    setEnabledSections(data.settings?.profileSections || []);
+    const foundTheme = COLOR_THEMES.find(t => t.color === data.settings?.color) || COLOR_THEMES[0];
+    setTheme(foundTheme);
+  };
+
   const canEdit = accessLevel === "admin" || accessLevel === "customer";
 
   // Filter bar handler
@@ -93,120 +106,113 @@ export function DirectoryPageClientWithEdit({ experienceId, userId, accessLevel 
     router.push(`?${params.toString()}`);
   };
 
+  // Map color value to gradient class
+  const getGradientClass = () => theme.gradient;
+
   return (
-    <div
-      className={`min-h-screen w-full flex flex-col items-center py-0 px-0 relative ${themeColor ? '' : 'bg-gradient-to-br from-indigo-400 via-purple-400 to-indigo-500'}`}
-      style={themeColor ? { background: themeColor } : undefined}
-    >
-      {/* Floating Edit Profile Button */}
-      {canEdit && currentProfile && (
-        <button
-          className="fixed top-8 right-8 z-50 bg-white px-6 py-3 rounded-full shadow-lg text-yellow-500 font-semibold flex items-center gap-2 hover:bg-yellow-50 hover:text-yellow-600 transition-all text-base border border-yellow-100"
-          onClick={() => setShowEditModal(true)}
-        >
-          <span>✏️</span>
-          <span>Edit Profile</span>
-        </button>
-      )}
+    <div className={`min-h-screen w-full flex flex-col items-center py-0 px-0 relative ${getGradientClass()}`}>
       {/* Header */}
-      <header className="w-full flex flex-col items-center justify-center pt-16 pb-8">
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <h1 className="text-5xl font-extrabold text-white drop-shadow-lg text-center">Community Hub</h1>
-          {accessLevel === "admin" && (
+      <header className="w-full flex flex-col items-center justify-center pt-10 pb-6">
+        <div className="flex items-center justify-between w-full max-w-6xl mx-auto mb-4 px-2">
+          <div>
             <button
-              className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white text-indigo-600 shadow transition"
-              title="Admin Settings"
+              className={`directory-action-btn border-2 border-gray-200 ${theme.buttonText} ${theme.buttonBg} px-5 py-2.5 rounded-xl font-semibold text-base flex items-center gap-2 shadow-sm ${theme.buttonHoverBg} transition`}
+              style={{ minWidth: 120 }}
               onClick={async () => { await fetchAdminSettings(); setShowAdminModal(true); }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09c.7 0 1.32-.4 1.51-1a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h.09c.7 0 1.32-.4 1.51-1V3a2 2 0 014 0v.09c0 .7.4 1.32 1 1.51a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.09c0 .7.4 1.32 1 1.51H21a2 2 0 010 4h-.09c-.7 0-1.32.4-1.51 1z" />
-              </svg>
+              <span role="img" aria-label="settings">⚙️</span> Admin Settings
             </button>
-          )}
-        </div>
-        <p className="text-lg text-white/90 mb-8 text-center max-w-2xl">Discover and connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
-        <div className="w-full max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center w-full gap-3">
-            <div className="flex-1 w-full">
-              <SearchBar experienceId={experienceId} tab={activeFilter} />
-            </div>
-            <div className="flex flex-row gap-2 mt-3 md:mt-0 h-[56px]">
-              {FILTERS.map(f => (
-                <button
-                  key={f.key}
-                  className={`px-6 py-4 rounded-full font-bold text-base transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-300 h-full
-                    ${activeFilter === f.key || (f.key === "all" && !searchParams.get("tab"))
-                      ? "bg-white text-indigo-600 shadow-md"
-                      : "bg-transparent text-white hover:bg-white/10"}
-                  `}
-                  onClick={() => handleFilter(f.key)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center">
+            <h1 className={`page-title text-4xl font-extrabold ${theme.text} text-center`}>Community Hub</h1>
+            <p className="page-subtitle text-lg text-slate-500 text-center max-w-2xl">Connect with amazing people in our community. Every member brings unique skills, experiences, and perspectives.</p>
+          </div>
+          <div>
+            <button
+              className={`directory-action-btn border-2 border-gray-200 ${theme.buttonText} ${theme.buttonBg} px-5 py-2.5 rounded-xl font-semibold text-base flex items-center gap-2 shadow-sm ${theme.buttonHoverBg} transition`}
+              style={{ minWidth: 120 }}
+              onClick={() => setShowEditModal(true)}
+            >
+              ✏️ Edit Profile
+            </button>
           </div>
         </div>
-        <div className="w-full max-w-3xl mx-auto text-right text-white/80 text-sm mt-2">
-          {/* Show count if available */}
-        </div>
       </header>
-      <main className="w-full max-w-7xl px-4 pb-16">
+      <div className="search-section flex justify-center mb-6 w-full">
+        <SearchBar experienceId={experienceId} tab={activeFilter} />
+      </div>
+      <div className="filters flex justify-center gap-2 mb-8 flex-wrap w-full">
+        {FILTERS.map(f => (
+          <button
+            key={f.key}
+            className={`filter-btn px-4 py-2 rounded-full font-semibold text-sm border-2 transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-300
+              ${activeFilter === f.key || (f.key === "all" && !searchParams.get("tab"))
+                ? "bg-indigo-500 text-white border-indigo-500 shadow"
+                : "bg-[#f8f9fa] text-gray-700 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600"}
+            `}
+            onClick={() => handleFilter(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <main className="w-full max-w-7xl px-2 pb-16">
         <Suspense fallback={<div>Loading profiles...</div>}>
-          <DirectoryGrid experienceId={experienceId} currentUserId={userId} canEdit={canEdit} tab={activeFilter} />
+          <DirectoryGrid experienceId={experienceId} currentUserId={userId} canEdit={canEdit} tab={activeFilter} theme={theme} />
         </Suspense>
       </main>
       {/* Edit Profile Modal */}
       {showEditModal && currentProfile && enabledSections && (
-        (() => {
-          return (
-            <EditProfileModal
-              profile={currentProfile}
-              onClose={() => setShowEditModal(false)}
-              onSave={async (updatedProfile) => {
-                try {
-                  const result = await updateProfile({
-                    id: updatedProfile.id,
-                    experienceId,
-                    username: updatedProfile.username,
-                    name: updatedProfile.name,
-                    bio: updatedProfile.bio,
-                    sections: updatedProfile.sections.map(section => ({
-                      type: section.type,
-                      data: section.data,
-                    })),
-                  });
-                  if (!result.success) {
-                    throw new Error(result.error || 'Failed to update profile');
-                  }
-                  setShowEditModal(false);
-                  // Refetch the current profile
-                  const res = await fetch(`/api/profile?userId=${userId}&experienceId=${experienceId}`);
-                  const data = await res.json();
-                  if (data && data.profile) {
-                    setCurrentProfile(data.profile);
-                    router.refresh();
-                  } else {
-                    throw new Error('Failed to refetch profile');
-                  }
-                } catch (error) {
-                  console.error("Failed to update profile:", error);
-                  alert(error instanceof Error ? error.message : 'Failed to update profile');
-                }
-              }}
-              enabledSections={enabledSections}
-            />
-          );
-        })()
+        <EditProfileModal
+          profile={currentProfile}
+          onClose={() => setShowEditModal(false)}
+          onSave={async (updatedProfile) => {
+            try {
+              const result = await updateProfile({
+                id: updatedProfile.id,
+                experienceId,
+                username: updatedProfile.username,
+                name: updatedProfile.name,
+                bio: updatedProfile.bio,
+                sections: updatedProfile.sections.map(section => ({
+                  type: section.type,
+                  data: section.data,
+                })),
+              });
+              if (!result.success) {
+                throw new Error(result.error || 'Failed to update profile');
+              }
+              setShowEditModal(false);
+              // Refetch the current profile
+              const res = await fetch(`/api/profile?userId=${userId}&experienceId=${experienceId}`);
+              const data = await res.json();
+              if (data && data.profile) {
+                setCurrentProfile(data.profile);
+                router.refresh();
+              } else {
+                throw new Error('Failed to refetch profile');
+              }
+            } catch (error) {
+              console.error("Failed to update profile:", error);
+              alert(error instanceof Error ? error.message : 'Failed to update profile');
+            }
+          }}
+          enabledSections={enabledSections}
+          theme={theme}
+        />
       )}
       {/* Admin Settings Modal */}
-      <AdminSettingsModal
-        open={showAdminModal}
-        onClose={() => setShowAdminModal(false)}
-        experienceId={experienceId}
-        currentSettings={adminSettings}
-      />
+      {showAdminModal && (
+        <AdminSettingsModal
+          open={showAdminModal}
+          experienceId={experienceId}
+          currentSettings={adminSettings}
+          onClose={() => {
+            setShowAdminModal(false);
+            fetchEnabledSections();
+          }}
+        />
+      )}
     </div>
   );
 } 

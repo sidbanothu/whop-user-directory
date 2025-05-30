@@ -4,6 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { ProfileCard } from "@/components/directory/ProfileCard";
 import { Profile, ProfileSection } from "@/lib/types/profile";
 import { OPTIONAL_SECTIONS } from "./optionalSectionsConfig";
+import { COLOR_THEMES } from "@/components/admin/admin-settings";
 
 export function LivePreview() {
   const { watch } = useFormContext();
@@ -34,7 +35,7 @@ export function LivePreview() {
     <section className="bg-white rounded-lg shadow-sm p-4">
       <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
       <div className="transform scale-90 origin-top">
-        <ProfileCard profile={previewProfile} />
+        <ProfileCard profile={previewProfile} theme={COLOR_THEMES[0]} />
       </div>
     </section>
   );

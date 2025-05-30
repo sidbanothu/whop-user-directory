@@ -8,19 +8,22 @@ import { Profile } from "@/lib/types/profile";
 import { useState, useEffect } from "react";
 import { updateProfile } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
+import { ProfileModal } from "./ProfileModal";
 
 interface DirectoryGridProps {
   experienceId: string;
   currentUserId: string;
   canEdit: boolean;
   tab?: string;
+  theme: any;
 }
 
-export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: DirectoryGridProps) {
+export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab, theme }: DirectoryGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { profiles, isLoading, error } = useProfiles(experienceId);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [viewingProfile, setViewingProfile] = useState<Profile | null>(null);
   const [enabledSections, setEnabledSections] = useState<string[] | null>(null);
   const searchQuery = searchParams.get("q")?.toLowerCase() || "";
 
@@ -39,9 +42,16 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
   }
 
   // Filter by section type if tab is set and not 'all'
-  let filteredProfiles = tab && tab !== "all"
-    ? profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1) && enabledSections.includes(s.type)))
-    : profiles;
+  let filteredProfiles = profiles;
+  if (tab && tab !== "all") {
+    if (tab === "verified") {
+      filteredProfiles = profiles.filter(profile => profile.is_premium_member);
+    } else if (tab === "gamers") {
+      filteredProfiles = profiles.filter(profile => profile.sections.some(s => s.type === "gamer" && enabledSections.includes(s.type)));
+    } else {
+      filteredProfiles = profiles.filter(profile => profile.sections.some(s => s.type === tab.slice(0, -1) && enabledSections.includes(s.type)));
+    }
+  }
 
   // Apply search filter (name, username, bio only)
   if (searchQuery) {
@@ -80,6 +90,12 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
       }
 
       setEditingProfile(null);
+      // Fetch the latest profile from the backend
+      const res = await fetch(`/api/profile?userId=${updatedProfile.userId}&experienceId=${experienceId}`);
+      const data = await res.json();
+      if (data && data.profile) {
+        setViewingProfile(data.profile);
+      }
       console.log('[DirectoryGrid] Profile updated successfully, refreshing data');
       // Force a refresh of the profiles data
       router.refresh();
@@ -120,7 +136,7 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="profile-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-10">
         {filteredProfiles.map((profile) => (
           <ProfileCard 
             key={profile.id} 
@@ -129,23 +145,29 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab }: Dir
             isEditable={canEdit && currentUserId === profile.userId}
             currentUserId={currentUserId}
             enabledSections={enabledSections}
+            theme={theme}
           />
         ))}
       </div>
 
       {/* Edit Profile Modal */}
       {editingProfile && enabledSections && (
-        (() => {
-          console.log('[DirectoryGrid] Rendering EditProfileModal with enabledSections:', enabledSections);
-          return (
-            <EditProfileModal
-              profile={editingProfile}
-              onClose={() => setEditingProfile(null)}
-              onSave={handleSaveProfile}
-              enabledSections={enabledSections}
-            />
-          );
-        })()
+        <EditProfileModal
+          profile={editingProfile}
+          onClose={() => setEditingProfile(null)}
+          onSave={handleSaveProfile}
+          enabledSections={enabledSections}
+          theme={theme}
+        />
+      )}
+      {/* Profile Modal after save */}
+      {viewingProfile && enabledSections && (
+        <ProfileModal
+          profile={viewingProfile}
+          onClose={() => setViewingProfile(null)}
+          enabledSections={enabledSections}
+          theme={theme}
+        />
       )}
     </>
   );
