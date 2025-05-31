@@ -34,6 +34,7 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
   const [announceResult, setAnnounceResult] = useState<string | null>(null);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [sendMessageResult, setSendMessageResult] = useState<string | null>(null);
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
 
   useEffect(() => {
     async function fetchEnabledSections() {
@@ -157,9 +158,12 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
         if (!result.success) {
           throw new Error(result.error);
         }
-
-        router.push(`/experiences/${experienceId}`);
       }
+      // If sharing is enabled, send to chat/forum
+      if (shareWithCommunity) {
+        await handleSendMessage();
+      }
+      router.push(`/experiences/${experienceId}`);
     } catch (error) {
       console.error("[ProfileForm] Error saving profile:", error);
       setError(error instanceof Error ? error.message : "Failed to save profile");
@@ -172,17 +176,22 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
     setIsSendingMessage(true);
     setSendMessageResult(null);
     try {
+      // Build user and profile objects for API
+      const user = {
+        name: initialData.name,
+        username: initialData.username,
+        bio: initialData.bio,
+        createdAt: initialData.createdAt,
+      };
+      const profile = {
+        ...initialData,
+        experienceId: experienceId,
+      };
       console.log('[ProfileForm] Sending to chat...');
       const chatRes = await fetch("/api/send-profile-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: initialData.userId,
-          experienceId,
-          name: initialData.name,
-          username: initialData.username,
-          bio: initialData.bio,
-        }),
+        body: JSON.stringify({ user, profile }),
       });
       const chatResult = await chatRes.json();
       console.log('[ProfileForm] Chat result:', chatResult);
@@ -192,13 +201,7 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
       const forumRes = await fetch("/api/send-profile-forum-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: initialData.userId,
-          experienceId,
-          name: initialData.name,
-          username: initialData.username,
-          bio: initialData.bio,
-        }),
+        body: JSON.stringify({ user, profile }),
       });
       const forumResult = await forumRes.json();
       console.log('[ProfileForm] Forum result:', forumResult);
@@ -235,6 +238,21 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
         {error && (
           <div className="p-3 bg-red-50 text-red-700 rounded mb-4">{error}</div>
         )}
+        {/* Share with Community Toggle */}
+        <div className="flex items-center mb-2 mt-6">
+          <button
+            type="button"
+            onClick={() => setShareWithCommunity(v => !v)}
+            className={`w-12 h-7 flex items-center rounded-full p-1 transition-colors duration-200 ${shareWithCommunity ? 'bg-blue-500' : 'bg-gray-300'}`}
+            aria-pressed={shareWithCommunity}
+          >
+            <span className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${shareWithCommunity ? 'translate-x-5' : ''}`}></span>
+          </button>
+          <span className="ml-3 font-medium text-lg">Share profile with community</span>
+        </div>
+        <p className="text-gray-500 mb-4 ml-1">
+          When enabled, your profile will be posted in the community chat and forum when you save changes.
+        </p>
         <div className="flex justify-end gap-4 pt-6 border-t mt-8">
           <button
             type="button"
@@ -246,9 +264,11 @@ export function ProfileForm({ initialData, experienceId, onClose, onSave }: Prof
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-all disabled:opacity-60"
+            className="px-6 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all disabled:opacity-60"
           >
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting
+              ? (shareWithCommunity ? "Saving & Sharing..." : "Saving...")
+              : (shareWithCommunity ? "Save & Share Profile" : "Save Changes")}
           </button>
         </div>
       </form>
