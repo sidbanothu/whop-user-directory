@@ -35,7 +35,7 @@ export default async function EditProfilePage({ params }: { params: Promise<{ ex
 
   console.log("Profile after creation", profile);
 
-  // Transform the profile to match the Profile type
+  // Transform the profile to match the Profile type 
   const transformedProfile: Profile = {
     id: profile.id,
     userId: profile.userId,
