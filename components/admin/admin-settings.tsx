@@ -145,6 +145,8 @@ export function AdminSettings({ experienceId, currentSettings, onSaveSuccess }: 
   const [profileSections, setProfileSections] = useState<string[]>(currentSettings.profileSections || PROFILE_SECTION_OPTIONS.map(s => s.key));
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const handleSectionChange = (section: string) => {
     setProfileSections((prev) =>
@@ -181,9 +183,40 @@ export function AdminSettings({ experienceId, currentSettings, onSaveSuccess }: 
     }
   };
 
+  const handleSyncProfiles = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch("/api/admin/sync-access-pass-members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessPassId: "prod_cXOfYhdgpM6Ge" }),
+      });
+      const data = await res.json();
+      setSyncMessage(`Created ${data.created} new profiles!`);
+    } catch (err: any) {
+      setSyncMessage("Failed to sync profiles");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-2xl">
       <h2 className="text-2xl font-extrabold mb-6">Admin Settings</h2>
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={handleSyncProfiles}
+          disabled={syncing}
+          className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all disabled:opacity-60"
+        >
+          {syncing ? "Syncing..." : "Sync Access Pass Members"}
+        </button>
+        {syncMessage && (
+          <div className="mt-2 text-sm text-gray-700">{syncMessage}</div>
+        )}
+      </div>
       <div className="mb-8">
         <div className="font-bold text-lg mb-2">Color Theme</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-2">
