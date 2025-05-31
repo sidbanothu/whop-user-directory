@@ -62,15 +62,18 @@ export async function POST(request: NextRequest): Promise<Response> {
 						// Transfer $0.50 to Sidbanothu
 						const amount = 1.0; // 1.00 USD
 						const currency = "usd";
-						const destinationId = "user_htieokJ90kVys"; // hardcoded for now 
-						console.log(`[webhook] Initiating transferFunds: amount=${amount}, currency=${currency}, destinationId=${destinationId}, ledgerAccountId=${ledgerAccount.company.ledgerAccount.id}`);
+						const destinationId = userId; // Use the dynamic userId from the webhook event
+						const transferFee = ledgerAccount.company.ledgerAccount.transferFee;
+						const idempotenceKey = `owner-payout-${experienceId}-${Date.now()}`;
+						console.log(`[webhook] Initiating transferFunds: amount=${amount}, currency=${currency}, destinationId=${destinationId}, ledgerAccountId=${ledgerAccount.company.ledgerAccount.id}, transferFee=${transferFee}, idempotenceKey=${idempotenceKey}`);
 						await whopApi.withUser(process.env.WHOP_AGENT_USER_ID).transferFunds({
 							input: {
 								amount,
 								currency,
 								destinationId,
 								ledgerAccountId: ledgerAccount.company.ledgerAccount.id,
-								idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
+								transferFee,
+								idempotenceKey
 							}
 						});
 						console.log("[webhook] Owner payout successful");
