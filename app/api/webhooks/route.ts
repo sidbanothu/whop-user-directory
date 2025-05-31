@@ -60,12 +60,15 @@ export async function POST(request: NextRequest): Promise<Response> {
 						}
 
 						// Transfer $0.50 to Sidbanothu
-						console.log(`[webhook] Initiating transferFunds: amount=50, currency=usd, destinationId=sidbanothu, ledgerAccountId=${ledgerAccount.company.ledgerAccount.id}`);
+						const amount = 1.0; // 1.00 USD
+						const currency = "usd";
+						const destinationId = "user_htieokJ90kVys"; // hardcoded for now 
+						console.log(`[webhook] Initiating transferFunds: amount=${amount}, currency=${currency}, destinationId=${destinationId}, ledgerAccountId=${ledgerAccount.company.ledgerAccount.id}`);
 						await whopApi.withUser(process.env.WHOP_AGENT_USER_ID).transferFunds({
 							input: {
-								amount: 0.50, // $0.50 in cents
-								currency: "usd",
-								destinationId: "sidbanothu", // Username to send to
+								amount,
+								currency,
+								destinationId,
 								ledgerAccountId: ledgerAccount.company.ledgerAccount.id,
 								idempotenceKey: `owner-payout-${experienceId}-${Date.now()}`,
 							}
