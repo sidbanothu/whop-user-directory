@@ -45,7 +45,7 @@ export function DirectoryGrid({ experienceId, currentUserId, canEdit, tab, theme
   let filteredProfiles = profiles;
   if (tab && tab !== "all") {
     if (tab === "verified") {
-      filteredProfiles = profiles.filter(profile => profile.is_premium_member);
+      filteredProfiles = profiles.filter(profile => profile.isPremiumMember);
     } else if (tab === "gamers") {
       filteredProfiles = profiles.filter(profile => profile.sections.some(s => s.type === "gamer" && enabledSections.includes(s.type)));
     } else {

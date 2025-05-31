@@ -83,14 +83,14 @@ export function EditProfileModal({ profile, onClose, onSave, enabledSections, th
           <div className={`${theme.textOnGradient} text-base opacity-80 mb-4`}>Manage your profile and connect with community members</div>
           {/* Premium Status */}
           <div className="flex items-center gap-4 mb-2">
-            {profile.is_premium_member ? null : (
-              <PremiumBadgeButton userId={profile.userId} experienceId={profile.experience_id} label="Get Verified $1" />
+            {profile.isPremiumMember ? null : (
+              <PremiumBadgeButton userId={profile.userId} experienceId={profile.experienceId} label="Get Verified $1" />
             )}
           </div>
         </div>
         {/* Modal Body - no preview, more spacious */}
         <div className={`p-10 space-y-10 overflow-y-auto rounded-b-3xl min-h-[60vh] bg-white`}>
-          <ProfileForm initialData={profile} experienceId={profile.experience_id} onClose={onClose} onSave={onSave} />
+          <ProfileForm initialData={profile} experienceId={profile.experienceId} onClose={onClose} onSave={onSave} />
         </div>
       </div>
     </div>

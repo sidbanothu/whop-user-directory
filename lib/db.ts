@@ -1,17 +1,8 @@
-import { PrismaClient } from "./generated/prisma";
-
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
+import { db } from '../src/db';
+import { profiles } from '../src/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 console.log(process.env.DATABASE_URL_SERVICE_ROLE);
-
-// Use service role connection string to bypass RLS
-const prismaClientSingleton = () => {
-  return new PrismaClient()
-};
-
-export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export async function findOrCreateProfile({
   userId,
@@ -29,45 +20,46 @@ export async function findOrCreateProfile({
   defaultAvatarUrl?: string;
 }) {
   // Try to find existing profile
-  const existingProfile = await prisma.profiles.findFirst({
-    where: {
-      user_id: userId,
-      experience_id: experienceId,
-    },
-  });
+  const existingProfile = await db.select().from(profiles).where(
+    and(
+      eq(profiles.userId, userId),
+      eq(profiles.experienceId, experienceId)
+    )
+  ).limit(1);
 
-  if (existingProfile) {
+  if (existingProfile.length > 0) {
+    const profile = existingProfile[0];
     // If any fields are empty, update them with Whop info
     const needsUpdate =
-      (!existingProfile.username && defaultUsername) ||
-      (!existingProfile.name && defaultName) ||
-      (!existingProfile.bio && defaultBio) ||
-      (!existingProfile.avatar_url && defaultAvatarUrl);
+      (!profile.username && defaultUsername) ||
+      (!profile.name && defaultName) ||
+      (!profile.bio && defaultBio) ||
+      (!profile.avatarUrl && defaultAvatarUrl);
 
     if (needsUpdate) {
-      return await prisma.profiles.update({
-        where: { id: existingProfile.id },
-        data: {
-          username: existingProfile.username || defaultUsername,
-          name: existingProfile.name || defaultName,
-          bio: existingProfile.bio || defaultBio,
-          avatar_url: existingProfile.avatar_url || defaultAvatarUrl,
-        },
-      });
+      const [updated] = await db.update(profiles)
+        .set({
+          username: profile.username || defaultUsername,
+          name: profile.name || defaultName,
+          bio: profile.bio || defaultBio,
+          avatarUrl: profile.avatarUrl || defaultAvatarUrl,
+        })
+        .where(eq(profiles.id, profile.id))
+        .returning();
+      return updated;
     }
-    return existingProfile;
+    return profile;
   }
 
   // Create new profile if none exists
-  return prisma.profiles.create({
-    data: {
-      user_id: userId,
-      experience_id: experienceId,
-      username: defaultUsername,
-      name: defaultName ?? "",
-      bio: defaultBio ?? "",
-      avatar_url: defaultAvatarUrl ?? "",
-      sections: [],
-    },
-  });
+  const [created] = await db.insert(profiles).values({
+    userId,
+    experienceId,
+    username: defaultUsername,
+    name: defaultName ?? '',
+    bio: defaultBio ?? '',
+    avatarUrl: defaultAvatarUrl ?? '',
+    sections: [],
+  }).returning();
+  return created;
 } 

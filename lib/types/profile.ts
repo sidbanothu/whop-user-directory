@@ -7,7 +7,7 @@ export type ProfileSection = {
 export type Profile = {
   id: string;
   userId: string;
-  experience_id: string;
+  experienceId: string;
   username: string;
   name: string;
   bio: string;
@@ -15,5 +15,5 @@ export type Profile = {
   sections: ProfileSection[];
   createdAt: string;
   updatedAt: string;
-  is_premium_member?: boolean;
+  isPremiumMember?: boolean;
 }; 

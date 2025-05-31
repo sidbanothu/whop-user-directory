@@ -38,19 +38,19 @@ export default async function EditProfilePage({ params }: { params: Promise<{ ex
   // Transform the profile to match the Profile type
   const transformedProfile: Profile = {
     id: profile.id,
-    userId: profile.user_id,
-    experience_id: profile.experience_id,
+    userId: profile.userId,
+    experienceId: profile.experienceId,
     username: profile.username,
     name: profile.name,
     bio: profile.bio ?? "",
-    avatarUrl: profile.avatar_url,
+    avatarUrl: profile.avatarUrl,
     sections: (profile.sections as any[] || []).map(section => ({
       type: section.type as ProfileSection["type"],
       title: section.title,
       data: section.data as Record<string, string | string[]>,
     })),
-    createdAt: profile.created_at?.toISOString() ?? new Date().toISOString(),
-    updatedAt: profile.updated_at?.toISOString() ?? new Date().toISOString(),
+    createdAt: profile.createdAt?.toISOString() ?? new Date().toISOString(),
+    updatedAt: profile.updatedAt?.toISOString() ?? new Date().toISOString(),
   };
 
   const justCreated = !profile.name && !profile.username; // Consider it "just created" if name and username are empty

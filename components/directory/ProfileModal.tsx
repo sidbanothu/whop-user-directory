@@ -243,7 +243,7 @@ export function ProfileModal({ profile, onClose, enabledSections, theme }: Profi
             <div className={theme.textOnGradient}>
               <h2 className={`text-3xl font-bold mb-1 flex items-center gap-3 ${theme.textOnGradient}`}>
                 {profile.name}
-                {profile.is_premium_member ? (
+                {profile.isPremiumMember ? (
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400 text-white font-semibold text-base shadow">
                     <span role="img" aria-label="star">🌟</span> Premium Member
                   </span>

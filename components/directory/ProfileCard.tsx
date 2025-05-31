@@ -121,7 +121,7 @@ export function ProfileCard({ profile, onEdit, isEditable = false, enabledSectio
   ));
 
   // Verification badge
-  const verificationBadge = profile.is_premium_member ? (
+  const verificationBadge = profile.isPremiumMember ? (
     <div className="verified-badge bg-gradient-to-r from-green-500 to-teal-400 border-2 border-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ml-2">
       ✓ Verified
     </div>

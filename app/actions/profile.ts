@@ -1,6 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { db } from "@/src/db";
+import { profiles } from "@/src/db/schema";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile({
@@ -28,16 +30,16 @@ export async function updateProfile({
       sections
     });
 
-    const updatedProfile = await prisma.profiles.update({
-      where: { id },
-      data: {
+    const [updatedProfile] = await db.update(profiles)
+      .set({
         username,
         name,
         bio,
-        sections: sections as any,
-        updated_at: new Date(),
-      },
-    });
+        sections: sections,
+        updatedAt: new Date(),
+      })
+      .where(eq(profiles.id, id))
+      .returning();
 
     console.log('[updateProfile] Successfully updated profile in database:', updatedProfile);
 

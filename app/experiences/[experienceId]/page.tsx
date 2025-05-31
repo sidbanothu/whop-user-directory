@@ -4,7 +4,7 @@ import { verifyUserToken } from "@whop/api";
 import { headers } from "next/headers";
 import { DirectoryPageClientWithEdit } from "@/components/directory/DirectoryPageClientWithEdit";
 import Link from "next/link";
-import { findOrCreateProfile, prisma } from "@/lib/db";
+import { findOrCreateProfile } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { CreateProfileButton } from "@/components/CreateProfileButton";
 
@@ -17,11 +17,13 @@ export default async function ExperiencePage({ params }) {
   const whopUser = (await whopApi.getUser({ userId })).publicUser;
 
   // Only fetch profile, do not create
-  const profile = await prisma.profiles.findFirst({
-    where: {
-      user_id: userId,
-      experience_id: experienceId,
-    },
+  const profile = await findOrCreateProfile({
+    userId,
+    experienceId,
+    defaultUsername: whopUser.username ?? "",
+    defaultName: whopUser.name ?? "",
+    defaultBio: whopUser.bio ?? "",
+    defaultAvatarUrl: whopUser.profilePicture?.sourceUrl ?? "",
   });
 
   const result = await whopApi.checkIfUserHasAccessToExperience({

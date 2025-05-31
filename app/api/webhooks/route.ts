@@ -3,7 +3,9 @@ import { makeWebhookValidator } from "@whop/api";
 import type { NextRequest } from "next/server";
 import { whopApi } from "@/lib/whop-api";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { db } from "@/src/db";
+import { profiles } from "@/src/db/schema";
+import { eq, and } from "drizzle-orm";
 
 const validateWebhook = makeWebhookValidator({
 	webhookSecret: process.env.WHOP_WEBHOOK_SECRET ?? "fallback",
@@ -25,25 +27,22 @@ export async function POST(request: NextRequest): Promise<Response> {
 			if (experienceId && userId) {
 				try {
 					console.log(`[webhook] Looking up profiles for user_id=${userId}, experience_id=${experienceId}`);
-					const existingProfiles = await prisma.profiles.findMany({
-						where: {
-							user_id: userId,
-							experience_id: experienceId,
-						},
-					});
+					const existingProfiles = await db.select().from(profiles).where(and(
+						eq(profiles.userId, userId),
+						eq(profiles.experienceId, experienceId)
+					));
 					console.log(`[webhook] Found ${existingProfiles.length} profile(s):`, existingProfiles);
 
 					console.log(`[webhook] Attempting DB update for user_id=${userId}, experience_id=${experienceId}`);
-					const updateResult = await prisma.profiles.updateMany({
-						where: {
-							user_id: userId,
-							experience_id: experienceId,
-						},
-						data: {
-							is_premium_member: true,
-							updated_at: new Date(),
-						},
-					});
+					const updateResult = await db.update(profiles)
+						.set({
+							isPremiumMember: true,
+							updatedAt: new Date(),
+						})
+						.where(and(
+							eq(profiles.userId, userId),
+							eq(profiles.experienceId, experienceId)
+						));
 					console.log(`[webhook] DB update result:`, updateResult);
 
 					// Try to send owner payout, but don't fail the webhook if it fails

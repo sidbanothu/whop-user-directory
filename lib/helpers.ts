@@ -1,28 +1,33 @@
-import { prisma } from "./db";
+import { db } from '../src/db';
+import { profiles } from '../src/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export async function findOrCreateProfile({
   userId,
   experienceId,
-  defaultUsername = "",
-  defaultName = "",
-  defaultBio = "",
-  defaultAvatarUrl = "",
+  defaultUsername = '',
+  defaultName = '',
+  defaultBio = '',
+  defaultAvatarUrl = '',
 }) {
-  let profile = await prisma.profiles.findFirst({
-    where: { user_id: userId, experience_id: experienceId },
-  });
+  const existing = await db.select().from(profiles).where(
+    and(
+      eq(profiles.userId, userId),
+      eq(profiles.experienceId, experienceId)
+    )
+  ).limit(1);
+  let profile = existing[0];
   if (!profile) {
-    profile = await prisma.profiles.create({
-      data: {
-        user_id: userId,
-        experience_id: experienceId,
-        username: defaultUsername,
-        name: defaultName,
-        bio: defaultBio,
-        avatar_url: defaultAvatarUrl,
-        sections: [],
-      },
-    });
+    const [created] = await db.insert(profiles).values({
+      userId,
+      experienceId,
+      username: defaultUsername,
+      name: defaultName,
+      bio: defaultBio,
+      avatarUrl: defaultAvatarUrl,
+      sections: [],
+    }).returning();
+    profile = created;
   }
   return profile;
 } 

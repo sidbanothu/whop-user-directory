@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
+import { db } from "@/src/db";
+import { experienceSettings } from "@/src/db/schema";
+import { eq } from "drizzle-orm";
 import { whopApi, verifyUserToken } from "@/lib/whop-api";
 
 // Save settings (POST)
@@ -18,11 +20,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert settings
-    await prisma.experienceSettings.upsert({
-      where: { experienceId },
-      update: { color, profileSections },
-      create: { experienceId, color, profileSections },
-    });
+    const [existing] = await db.select().from(experienceSettings).where(eq(experienceSettings.experienceId, experienceId)).limit(1);
+    if (existing) {
+      await db.update(experienceSettings)
+        .set({ color, profileSections })
+        .where(eq(experienceSettings.experienceId, experienceId));
+    } else {
+      await db.insert(experienceSettings).values({ experienceId, color, profileSections });
+    }
     return Response.json({ success: true });
   } catch (error) {
     console.error("Settings update error:", error);
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (!experienceId) {
       return Response.json({ error: "Missing experienceId" }, { status: 400 });
     }
-    const settings = await prisma.experienceSettings.findUnique({ where: { experienceId } });
+    const [settings] = await db.select().from(experienceSettings).where(eq(experienceSettings.experienceId, experienceId)).limit(1);
     return Response.json({ settings });
   } catch (error) {
     console.error("Settings fetch error:", error);
